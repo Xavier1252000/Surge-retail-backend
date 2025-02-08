@@ -8,6 +8,7 @@ public class ConfidentialApiRepository {
 
     private final MongoTemplate mongoTemplate;
 
+
     public ConfidentialApiRepository(MongoTemplate mongoTemplate){
         this.mongoTemplate = mongoTemplate;
     }

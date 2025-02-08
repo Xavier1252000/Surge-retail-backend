@@ -36,7 +36,7 @@ public class ConfidentialApiService {
 
     public ApiResponseHandler registerUser(String firstName, String lastName, String username, String emailId, String mobileNo, String password) {
 
-        if (publicApiRepository.anySuperAdminExists())
+        if (!publicApiRepository.anySuperAdminExists())
             return new ApiResponseHandler("First user must be super-admin", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
         if (publicApiRepository.userExistByUsername(username))
@@ -48,8 +48,9 @@ public class ConfidentialApiService {
         if (publicApiRepository.userExistByMobileNo(mobileNo))
             return new ApiResponseHandler("mobile number already registered", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
-        Set<String> role = new HashSet<>();
+        Set<String> role = new HashSet<>();  //  assigning user role by default
         role.add(User.USER_ROLE_USER);
+
         User user = new User();
         user.setFirstName(firstName);
         user.setLastName(lastName);

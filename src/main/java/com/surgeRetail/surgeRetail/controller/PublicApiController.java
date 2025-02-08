@@ -69,6 +69,4 @@ public class PublicApiController {
 
         return publicApiService.authenticateUser(username, password);
     }
-
-
 }
