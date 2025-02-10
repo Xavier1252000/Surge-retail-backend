@@ -1,6 +1,7 @@
 package com.surgeRetail.surgeRetail.repository;
 
 import com.surgeRetail.surgeRetail.document.master.ItemsCategoryMaster;
+import com.surgeRetail.surgeRetail.document.master.TaxMaster;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -30,5 +31,13 @@ public class MasterApiRepository {
 
     public ItemsCategoryMaster findItemCategoryMasterById(String categoryId) {
         return mongoTemplate.findById(categoryId, ItemsCategoryMaster.class);
+    }
+
+    public TaxMaster saveTaxMaster(TaxMaster taxMaster) {
+        return mongoTemplate.save(taxMaster);
+    }
+
+    public TaxMaster findTaxMasterById(String taxMasterId) {
+        return mongoTemplate.findById(taxMasterId, TaxMaster.class);
     }
 }

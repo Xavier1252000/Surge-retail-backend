@@ -4,13 +4,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.surgeRetail.surgeRetail.document.master.ItemsCategoryMaster;
+import com.surgeRetail.surgeRetail.document.master.TaxMaster;
 import com.surgeRetail.surgeRetail.repository.MasterApiRepository;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class MasterApiService {
@@ -68,5 +71,70 @@ public class MasterApiService {
             arrayNode.add(node);
         });
         return new ApiResponseHandler("All itemCategories", arrayNode, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
+    }
+
+
+//    <------------------------------------------------------ TAX-MASTER ------------------------------------------------------------->
+    public ApiResponseHandler addTaxMaster(String taxType, String taxCode, BigDecimal taxPercentage, String applicableOn, Set<String> applicableStateIds, Set<String> applicableCategories, Boolean inclusion, String description) {
+        TaxMaster taxMaster = new TaxMaster();
+        taxMaster.setTaxCode(taxCode);
+        taxMaster.setTaxType(taxType);
+        taxMaster.setApplicableOn(applicableOn);
+        taxMaster.setTaxPercentage(taxPercentage);
+        taxMaster.setApplicableStateIds(applicableStateIds);
+        taxMaster.setApplicableCategories(applicableCategories);
+        taxMaster.setInclusionOnBasePrice(inclusion);
+        taxMaster.setDescription(description);
+        taxMaster.onCreate();
+
+        TaxMaster tm = masterApiRepository.saveTaxMaster(taxMaster);
+        ObjectNode node = objectMapper.createObjectNode();
+        node.put("id", tm.getId());
+        node.put("taxCode", tm.getTaxCode());
+        node.put("taxType",tm.getTaxType());
+        node.put("applicableOn",tm.getApplicableOn());
+        node.put("taxPercentage",tm.getTaxPercentage());
+        node.put("description", description);
+        node.set("applicableStateIds",objectMapper.valueToTree(tm.getApplicableStateIds()));
+        node.set("applicableCategories", objectMapper.valueToTree(tm.getApplicableCategories()));
+        node.put("createdOn",String.valueOf(tm.getCreatedOn()));
+        node.put("modifiedOn", String.valueOf(tm.getModifiedOn()));
+        node.put("createdBy",tm.getCreatedBy());
+        node.put("active", tm.getActive());
+        return new ApiResponseHandler("taxMaster created successfully", node, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
+    }
+
+
+    public ApiResponseHandler updateTaxMaster(String taxMasterId, String taxType, String taxCode, BigDecimal taxPercentage, String applicableOn, Set<String> applicableStateIds, Set<String> applicableCategories, Boolean inclusion, String description, Boolean active) {
+        TaxMaster taxMaster = masterApiRepository.findTaxMasterById(taxMasterId);
+        if (taxMaster==null)
+            return new ApiResponseHandler("taxMaster not exist with providedId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        taxMaster.setTaxCode(taxCode);
+        taxMaster.setTaxType(taxType);
+        taxMaster.setApplicableOn(applicableOn);
+        taxMaster.setTaxPercentage(taxPercentage);
+        taxMaster.setApplicableStateIds(applicableStateIds);
+        taxMaster.setApplicableCategories(applicableCategories);
+        taxMaster.setInclusionOnBasePrice(inclusion);
+        taxMaster.setDescription(description);
+        taxMaster.setActive(active);
+        taxMaster.onUpdate();
+
+        TaxMaster tm = masterApiRepository.saveTaxMaster(taxMaster);
+        ObjectNode node = objectMapper.createObjectNode();
+
+        node.put("taxCode", tm.getTaxCode());
+        node.put("taxType",tm.getTaxType());
+        node.put("applicableOn",tm.getApplicableOn());
+        node.put("taxPercentage",tm.getTaxPercentage());
+        node.put("description", description);
+        node.set("applicableStateIds",objectMapper.valueToTree(tm.getApplicableStateIds()));
+        node.set("applicableCategories", objectMapper.valueToTree(tm.getApplicableCategories()));
+        node.put("createdOn",String.valueOf(tm.getCreatedOn()));
+        node.put("modifiedOn", String.valueOf(tm.getModifiedOn()));
+        node.put("createdBy",tm.getCreatedBy());
+        node.put("active", tm.getActive());
+        return new ApiResponseHandler("taxMaster updated successfully", node, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
     }
 }
