@@ -28,10 +28,10 @@ public class Item extends Auditable implements Serializable {
     private BigDecimal baseSellingPrice; // Base selling price (cost price + personal profit for seller)
     private BigDecimal additionalPrice; // Extra charges like packaging, delivery, etc.
     private Set<String> applicableTaxes; //taxMasterIds,  Tax category (e.g., "GST 18%", "VAT 5%")
-    private BigDecimal totalTaxPrice; // Tax amount applied
+    private BigDecimal totalTaxPrice = BigDecimal.ZERO; // Tax amount applied
     private Set<String> discountMasterIds;
-    private BigDecimal totalDiscountPrice; // Any discount applied
-    private BigDecimal finalPrice; // Computed as (price + additionalPrice + taxPrice - discountPrice)
+    private BigDecimal totalDiscountPrice = BigDecimal.ZERO; // Any discount applied
+    private BigDecimal finalPrice = BigDecimal.ZERO; // Computed as (price + additionalPrice + taxPrice - discountPrice)
     private BigDecimal profitMargin; // (FinalPrice - totalTaxPrice - totalDiscountPrice)
     private BigDecimal markupPercentage; // ((profitMargin) / CostPrice) * 100
     private String brand;

@@ -50,17 +50,35 @@ public class ItemsApiController {
         }
 
         String profitPercentage = (String) requestMap.get("profitToGainInPercentage");
-        BigDecimal profitToGainInPercentage;
-        try {
-            profitToGainInPercentage = new BigDecimal(profitPercentage);
-        }catch (Exception e){
-            return new ApiResponseHandler("please provide profitToGainInPercentage", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        BigDecimal profitToGainInPercentage = null;
+        
+
+        String bsPrice = (String) requestMap.get("baseSellingPrice");
+        BigDecimal baseSellingPrice=null;
+        
+        if (!StringUtils.isEmpty(profitPercentage) && !StringUtils.isEmpty(bsPrice))      // checking both baseSellingPrice and profitToGainInPercentage should not be present
+            return new ApiResponseHandler("please provide any one profitToGainInPercentage or baseSellingPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        
+        if (!StringUtils.isEmpty(profitPercentage)){
+            try {
+                profitToGainInPercentage = new BigDecimal(profitPercentage);
+            }catch (Exception e){
+                return new ApiResponseHandler("please provide valid values in profitToGainInPercentage", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            }
+        }
+
+        if (!StringUtils.isEmpty(bsPrice)){
+            try {
+                baseSellingPrice = new BigDecimal(bsPrice);
+            }catch (Exception e){
+                return new ApiResponseHandler("please provide valid values in baseSellingPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            }
         }
 
         String addPrice = (String)requestMap.get("additionalPrice");
         BigDecimal additionalPrice;
         try {
-            additionalPrice = new BigDecimal(profitPercentage);
+            additionalPrice = new BigDecimal(addPrice);
         }catch (Exception e){
             return new ApiResponseHandler("please provide additionalPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
         }
@@ -87,8 +105,22 @@ public class ItemsApiController {
         List<String> imageInfoIds = (List<String>)requestMap.get("itemImageInfoIds");
         Set<String> itemImageInfoIds = new HashSet<>(imageInfoIds);
 
-        Float itemStock = (Float) requestMap.get("itemStock");
-        Float stockThreshold = (Float) requestMap.get("stockThreshold");
+        String stock = (String) requestMap.get("itemStock");
+        Float itemStock = null;
+        try {
+            itemStock = Float.parseFloat(stock);
+        }catch (Exception e){
+            return new ApiResponseHandler("please provide valid values in itemStock can be integer or decimal", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        }
+
+
+        String sThreshold = (String) requestMap.get("stockThreshold");
+        Float stockThreshold = null;
+        try {
+            stockThreshold = Float.parseFloat(sThreshold);
+        }catch (Exception e){
+            return new ApiResponseHandler("please provide valid values in stockThreshold can be integer or decimal", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        }
 
 
         List<String> tutLinks = (List<String>) requestMap.get("tutorialLinks");
@@ -122,6 +154,7 @@ public class ItemsApiController {
         item.setItemName(itemName);
         item.setCostPrice(costPrice);
         item.setProfitToGainInPercentage(profitToGainInPercentage);
+        item.setBaseSellingPrice(baseSellingPrice);
         item.setAdditionalPrice(additionalPrice);
         item.setApplicableTaxes(applicableTaxes);
         item.setDiscountMasterIds(discountMasterIds);
@@ -138,8 +171,8 @@ public class ItemsApiController {
         item.setStockUnit(stockUnit);
         item.setIsReturnable(isReturnable);
         item.setIsWarrantyAvailable(isWarrantyAvailable);
+        item.setWarrantyPeriod(period);
         item.setExpiryDate(expiryDate);
-
 
         return itemsApiService.addItemToStore(item);
     }
