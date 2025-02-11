@@ -3,6 +3,8 @@ package com.surgeRetail.surgeRetail.repository;
 import com.surgeRetail.surgeRetail.document.master.DiscountMaster;
 import com.surgeRetail.surgeRetail.document.master.ItemsCategoryMaster;
 import com.surgeRetail.surgeRetail.document.master.TaxMaster;
+import com.surgeRetail.surgeRetail.document.master.UnitMaster;
+import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import org.springframework.boot.autoconfigure.graphql.data.GraphQlQueryByExampleAutoConfiguration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -50,5 +52,13 @@ public class MasterApiRepository {
 
     public List<DiscountMaster> findDiscountMasterByIds(Set<String> discountMasterIds) {
         return mongoTemplate.find(new Query(Criteria.where("id").in(discountMasterIds)), DiscountMaster.class);
+    }
+
+    public DiscountMaster saveDiscountMaster(DiscountMaster discountMaster) {
+        return mongoTemplate.save(discountMaster);
+    }
+
+    public UnitMaster saveUnitMaster(UnitMaster unitMaster) {
+        return mongoTemplate.save(unitMaster);
     }
 }

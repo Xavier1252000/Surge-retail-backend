@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class ItemsApiService {
@@ -27,6 +28,7 @@ public class ItemsApiService {
     }
     public ApiResponseHandler addItemToStore(Item item) {
 
+//        Setting profit percentage or profitMargin with the help of other one
         if (item.getProfitToGainInPercentage() != null) {
             BigDecimal profitMargin = item.getProfitToGainInPercentage()
                     .multiply(item.getCostPrice())
@@ -48,6 +50,12 @@ public class ItemsApiService {
 
         Set<String> applicableTaxMasterIds = item.getApplicableTaxes();
         List<TaxMaster> taxMasterByIds = masterApiRepository.findTaxMasterByIds(applicableTaxMasterIds);
+        Set<String> retrievedTaxMasterIds = taxMasterByIds.stream().map(x -> x.getId()).collect(Collectors.toSet());
+        for (String e : applicableTaxMasterIds){
+            if (!retrievedTaxMasterIds.contains(e))
+                return new ApiResponseHandler("tax not found with taxMasterId: "+e, null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        }
+
         BigDecimal totalTaxPrice = BigDecimal.valueOf(0);
         for (TaxMaster t:taxMasterByIds){
             BigDecimal taxPercentage = t.getTaxPercentage();
@@ -56,8 +64,15 @@ public class ItemsApiService {
         }
         item.setTotalTaxPrice(totalTaxPrice);
 
+
+//      Setting  Discount master     -------------------->
         Set<String> discountMasterIds = item.getDiscountMasterIds();
         List<DiscountMaster> discountMasterByIds = masterApiRepository.findDiscountMasterByIds(discountMasterIds);
+        Set<String> retDiscountMasterIds = discountMasterByIds.stream().map(x -> x.getId()).collect(Collectors.toSet());
+        for (String e:discountMasterIds){
+            if (!retDiscountMasterIds.contains(e))
+                return new ApiResponseHandler("discount not found by discountMasterId: "+e, null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        }
         BigDecimal totalDiscountPrice = null;
         for (DiscountMaster d:discountMasterByIds){
             BigDecimal discountPercentage = d.getDiscountPercentage();
@@ -75,7 +90,7 @@ public class ItemsApiService {
 
 
         item.setMarkupPercentage(item.getProfitMargin().divide(item.getCostPrice(), 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)));
-
+        item.onCreate();
         itemsApiRepository.saveItem(item);
 
 

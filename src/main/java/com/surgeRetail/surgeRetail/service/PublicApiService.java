@@ -82,7 +82,7 @@ public class PublicApiService {
 
         Set<String> roles = new HashSet<>();
         roles.add(User.USER_ROLE_USER);
-        roles.add(User.USER_ROLE_ADMIN);
+        roles.add(User.USER_ROLE_STORE_ADMIN);
         roles.add(User.USER_ROLE_SUPER_ADMIN);
 
         user.setRoles(roles);

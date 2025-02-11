@@ -1,6 +1,6 @@
 package com.surgeRetail.surgeRetail.controller;
 
-import com.surgeRetail.surgeRetail.document.master.ItemsCategoryMaster;
+import com.surgeRetail.surgeRetail.document.master.DiscountMaster;
 import com.surgeRetail.surgeRetail.service.MasterApiService;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
@@ -147,5 +147,50 @@ public class MasterApiController {
         Set<String> applicableCategories = new HashSet<>(categoryIds);
 
         return masterApiService.updateTaxMaster(id, taxType, taxCode, taxPercentage, applicableOn, applicableStateIds, applicableCategories, inclusion, description, active);
+    }
+
+//    <--------------------------------------------------------Discount Master -------------------------------------------------------->
+
+    @PostMapping("/add-discount-master")
+    public ApiResponseHandler addDiscountMaster(@RequestBody Map<String, Object> requestMap){
+        String discountName = (String) requestMap.get("discountName");
+        if(StringUtils.isEmpty(discountName)){
+            return new ApiResponseHandler("please provide discountName", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        }
+
+        Object disPercent = requestMap.get("discountPercentage");
+        BigDecimal discountPercentage = null;
+        if (disPercent instanceof BigDecimal) {
+            discountPercentage = (BigDecimal) disPercent;
+        }else {
+            try {
+                discountPercentage = new BigDecimal(String.valueOf(disPercent));
+            } catch (NumberFormatException e) {
+                return new ApiResponseHandler("please provide valid value in discountPercentage", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            }
+        }
+
+        String applicableOn = (String) requestMap.get("applicableOn");
+        if (!applicableOn.equals(DiscountMaster.DISCOUNT_APPLICABLE_ON_ITEM) && !applicableOn.equals(DiscountMaster.DISCOUNT_APPLICABLE_ON_TOTAL_BILL))
+            return new ApiResponseHandler("applicable on can have "+DiscountMaster.DISCOUNT_APPLICABLE_ON_ITEM + " or "+DiscountMaster.DISCOUNT_APPLICABLE_ON_TOTAL_BILL, null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        String discountCouponCode = (String) requestMap.get("discountCouponCode");
+        return masterApiService.addDiscountMaster(discountName, discountPercentage, discountCouponCode, applicableOn);
+    }
+
+
+//    <------------------------------------------------UnitMaster------------------------------------------------------->
+    @PostMapping("/add-unit-master")
+    public ApiResponseHandler addUnit(@RequestBody Map<String, Object> requestMap){
+        String unit = (String) requestMap.get("unitFullForm");
+        if(StringUtils.isEmpty(unit)){
+            return new ApiResponseHandler("please provide unit", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        }
+
+        String unitNotation = (String) requestMap.get("unitNotation");
+        if(StringUtils.isEmpty(unit)){
+            return new ApiResponseHandler("please provide unit", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        }
+        return masterApiService.addUnit(unit, unitNotation);
     }
 }

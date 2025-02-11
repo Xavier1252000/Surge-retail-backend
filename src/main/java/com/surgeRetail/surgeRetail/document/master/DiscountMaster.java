@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 public class DiscountMaster extends Auditable {
     @Id
     private String id;
+    private String discountName;
     private BigDecimal discountPercentage;
     private String applicableOn; //totalbill, item,
     private String discountCouponCode;

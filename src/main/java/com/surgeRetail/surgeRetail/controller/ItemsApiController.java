@@ -41,12 +41,16 @@ public class ItemsApiController {
         if (StringUtils.isEmpty(itemName))
             return new ApiResponseHandler("please provide itemName",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
-        String cp = (String) requestMap.get("costPrice");
+        Object cp = requestMap.get("costPrice");
         BigDecimal costPrice;
-        try {
-            costPrice = new BigDecimal(cp);
-        }catch (Exception e){
-            return new ApiResponseHandler("please provide costPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        if (cp instanceof BigDecimal) {
+            costPrice = (BigDecimal) cp;
+        }else {
+            try {
+                costPrice = new BigDecimal(String.valueOf(cp));
+            } catch (Exception e) {
+                return new ApiResponseHandler("please provide costPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            }
         }
 
         String profitPercentage = (String) requestMap.get("profitToGainInPercentage");
@@ -56,7 +60,7 @@ public class ItemsApiController {
         String bsPrice = (String) requestMap.get("baseSellingPrice");
         BigDecimal baseSellingPrice=null;
         
-        if (!StringUtils.isEmpty(profitPercentage) && !StringUtils.isEmpty(bsPrice))      // checking both baseSellingPrice and profitToGainInPercentage should not be present
+        if (!StringUtils.isEmpty(profitPercentage) && !StringUtils.isEmpty(bsPrice) || StringUtils.isEmpty(profitPercentage) && StringUtils.isEmpty(bsPrice))      // checking both baseSellingPrice and profitToGainInPercentage should not be present
             return new ApiResponseHandler("please provide any one profitToGainInPercentage or baseSellingPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
         
         if (!StringUtils.isEmpty(profitPercentage)){

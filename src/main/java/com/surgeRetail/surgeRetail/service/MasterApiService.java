@@ -3,8 +3,10 @@ package com.surgeRetail.surgeRetail.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.surgeRetail.surgeRetail.document.master.DiscountMaster;
 import com.surgeRetail.surgeRetail.document.master.ItemsCategoryMaster;
 import com.surgeRetail.surgeRetail.document.master.TaxMaster;
+import com.surgeRetail.surgeRetail.document.master.UnitMaster;
 import com.surgeRetail.surgeRetail.repository.MasterApiRepository;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
@@ -136,5 +138,23 @@ public class MasterApiService {
         node.put("createdBy",tm.getCreatedBy());
         node.put("active", tm.getActive());
         return new ApiResponseHandler("taxMaster updated successfully", node, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
+    }
+
+    public ApiResponseHandler addDiscountMaster(String discountName, BigDecimal discountPercentage, String discountCouponCode, String applicableOn) {
+        DiscountMaster discountMaster = new DiscountMaster();
+        discountMaster.setDiscountName(discountName);
+        discountMaster.setDiscountPercentage(discountPercentage);
+        discountMaster.setDiscountCouponCode(discountCouponCode);
+        discountMaster.setApplicableOn(applicableOn);
+        discountMaster.onCreate();;
+        DiscountMaster savedDiscountMaster = masterApiRepository.saveDiscountMaster(discountMaster);
+        return new ApiResponseHandler("discount master saved successfully!!!", savedDiscountMaster, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+    }
+
+    public ApiResponseHandler addUnit(String unit, String unitNotation) {
+        UnitMaster unitMaster = new UnitMaster();
+        unitMaster.setUnit(unit);
+        unitMaster.setUnitNotation(unitNotation);
+        return new ApiResponseHandler("now you can add item with measurement in: "+unit, masterApiRepository.saveUnitMaster(unitMaster), ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
     }
 }

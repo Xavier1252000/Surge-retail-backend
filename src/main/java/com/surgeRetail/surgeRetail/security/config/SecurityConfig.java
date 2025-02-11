@@ -45,7 +45,6 @@ public class SecurityConfig {
                 .httpBasic(Customizer.withDefaults())
                 .authorizeHttpRequests((authorize)->authorize
                         .requestMatchers("/public/**").permitAll()
-//                        .requestMatchers("/service/**").hasAuthority("service-provider")
                         .requestMatchers("/confidential/**").hasAuthority(User.USER_ROLE_SUPER_ADMIN)
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
