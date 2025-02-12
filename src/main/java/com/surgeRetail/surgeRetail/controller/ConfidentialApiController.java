@@ -50,4 +50,7 @@ public class ConfidentialApiController {
 
         return confidentialApiService.registerUser(firstName, lastName, username, emailId, mobileNo, password);
     }
+
+    @PostMapping("/register-client")
+    public ApiResponseHandler registerClient()
 }
