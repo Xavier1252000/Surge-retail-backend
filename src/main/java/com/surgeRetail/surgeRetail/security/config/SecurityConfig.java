@@ -1,6 +1,6 @@
 package com.surgeRetail.surgeRetail.security.config;
 
-import com.surgeRetail.surgeRetail.document.User;
+import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import com.surgeRetail.surgeRetail.security.jwt.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,7 +1,7 @@
 package com.surgeRetail.surgeRetail.repository;
 
-import com.surgeRetail.surgeRetail.document.SuperAdminInfo;
-import com.surgeRetail.surgeRetail.document.User;
+import com.surgeRetail.surgeRetail.document.userAndRoles.SuperAdminInfo;
+import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -80,5 +80,8 @@ public class PublicApiRepository {
 
     public void saveSuperAdminInfo(SuperAdminInfo superAdminInfo) {
         mongoTemplate.save(superAdminInfo);
+    }
+
+    public void getAllStores() {
     }
 }

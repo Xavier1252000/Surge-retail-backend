@@ -25,7 +25,7 @@ public class ApiRequestHandler {
         return map.get(key)==null?null:map.get(key);
     }
 
-    public <T> T getGenericObjectValue(String key, Class<?> clazz){
+    public <T> T getGenericObjectValue(String key, Class<T> clazz){
         if (StringUtils.isEmpty(key) || map == null){
             System.out.println("getObjectValue, either key is empty or object value is null");
             return null;
@@ -34,10 +34,13 @@ public class ApiRequestHandler {
         if (value == null){
             return null;
         }
+
+        if (clazz.isInstance(value))
+            return clazz.cast(value);
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-             return objectMapper.readValue(objectMapper.writeValueAsString(value), clazz);
-        } catch (JsonProcessingException e) {
+             return objectMapper.convertValue(value, clazz);
+        } catch (IllegalArgumentException e) {
             return null;
         }
 

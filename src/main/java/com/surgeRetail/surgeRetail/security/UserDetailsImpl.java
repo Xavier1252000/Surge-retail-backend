@@ -1,6 +1,7 @@
 package com.surgeRetail.surgeRetail.security;
 
-import com.surgeRetail.surgeRetail.document.User;
+import com.surgeRetail.surgeRetail.document.userAndRoles.Store;
+import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -13,9 +14,11 @@ import java.util.List;
 @Data
 public class UserDetailsImpl implements UserDetails {
     private User user;
+    private List<Store> stores;
 
-    public UserDetailsImpl(User user){
+    public UserDetailsImpl(User user, List<Store> stores){
         this.user = user;
+        this.stores = stores;
     }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

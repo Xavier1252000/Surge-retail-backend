@@ -1,4 +1,4 @@
-package com.surgeRetail.surgeRetail.document;
+package com.surgeRetail.surgeRetail.document.userAndRoles;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -22,6 +22,8 @@ public class User {
     private String password;
     private Instant createdOn;
     private Instant modifiedOn;
+    private String createdBy;
+    private String modifiedBy;
     private boolean active;
 
 

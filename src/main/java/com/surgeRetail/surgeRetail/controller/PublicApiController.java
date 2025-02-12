@@ -1,6 +1,5 @@
 package com.surgeRetail.surgeRetail.controller;
 
-import com.surgeRetail.surgeRetail.document.User;
 import com.surgeRetail.surgeRetail.service.PublicApiService;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;

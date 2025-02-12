@@ -1,9 +1,8 @@
 package com.surgeRetail.surgeRetail.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.surgeRetail.surgeRetail.document.SuperAdminInfo;
-import com.surgeRetail.surgeRetail.document.User;
+import com.surgeRetail.surgeRetail.document.userAndRoles.SuperAdminInfo;
+import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import com.surgeRetail.surgeRetail.repository.ConfidentialApiRepository;
 import com.surgeRetail.surgeRetail.repository.PublicApiRepository;
 import com.surgeRetail.surgeRetail.security.jwt.JwtService;

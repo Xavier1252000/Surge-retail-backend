@@ -37,6 +37,12 @@ public class ItemsApiController {
     @PostMapping("/add-items-to-store")
     public ApiResponseHandler addItemsToStore(@RequestBody Map<String, Object> requestMap){
 
+
+        String storeId = (String) requestMap.get("storeId");
+        if (StringUtils.isEmpty(storeId))
+            return new ApiResponseHandler("please provide storeId",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+
         String itemName = (String) requestMap.get("itemName");
         if (StringUtils.isEmpty(itemName))
             return new ApiResponseHandler("please provide itemName",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
@@ -152,9 +158,8 @@ public class ItemsApiController {
             }
         }
 
-
-
         Item item = new Item();
+        item.setStoreId(storeId);
         item.setItemName(itemName);
         item.setCostPrice(costPrice);
         item.setProfitToGainInPercentage(profitToGainInPercentage);

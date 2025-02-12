@@ -1,9 +1,8 @@
 package com.surgeRetail.surgeRetail.security.jwt;
 
-import com.surgeRetail.surgeRetail.document.User;
+import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import lombok.Data;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 
 @Data

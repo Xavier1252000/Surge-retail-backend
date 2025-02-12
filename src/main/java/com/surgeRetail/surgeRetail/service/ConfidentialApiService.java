@@ -3,7 +3,9 @@ package com.surgeRetail.surgeRetail.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.surgeRetail.surgeRetail.document.User;
+import com.surgeRetail.surgeRetail.document.userAndRoles.ClientSecret;
+import com.surgeRetail.surgeRetail.document.userAndRoles.SuperAdminInfo;
+import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import com.surgeRetail.surgeRetail.repository.ConfidentialApiRepository;
 import com.surgeRetail.surgeRetail.repository.PublicApiRepository;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
@@ -13,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -78,5 +81,106 @@ public class ConfidentialApiService {
         node.put("active",user.isActive());
 
         return new ApiResponseHandler("user registered successfully with id: "+user.getId(), node, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
+    }
+
+    public ApiResponseHandler registerClient(String firstName, String lastName, String emailId, String mobileNo, String username, String password, String clientSecret) {
+
+        if (publicApiRepository.userExistByUsername(username))
+            return new ApiResponseHandler("client already exists with provided username", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        if (publicApiRepository.userExistByEmailId(emailId))
+            return new ApiResponseHandler("client already registered with provided emailId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        if (publicApiRepository.userExistByMobileNo(mobileNo))
+            return new ApiResponseHandler("client already registered with provided mobileNo", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        Set<String> role = new HashSet<>();  //  assigning user role by default
+        role.add(User.USER_ROLE_USER);
+        role.add(User.USER_ROLE_CLIENT);
+        role.add(User.USER_ROLE_CASHIER);
+        role.add(User.USER_ROLE_MANAGEMENT);
+        role.add(User.USER_ROLE_STORE_ADMIN);
+
+
+        User user = new User();
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmailId(emailId);
+        user.setMobileNo(mobileNo);
+        user.setUsername(username);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setRoles(role);
+        user.setCreatedOn(Instant.now());
+        user.setModifiedOn(Instant.now());
+        user.setActive(true);
+
+        publicApiRepository.save(user);
+
+        ClientSecret cs = new ClientSecret();
+        cs.setClientSecret(passwordEncoder.encode(clientSecret));
+        cs.setUserId(user.getId());
+        cs.onCreate();
+        confidentialApiRepository.saveClientSecret(cs);
+
+        ObjectNode node = objectMapper.createObjectNode();
+        node.put("id",user.getId());
+        node.put("firstName", user.getFirstName());
+        node.put("lastName",user.getLastName());
+        node.put("emailId",user.getEmailId());
+        node.put("username",user.getUsername());
+        node.put("mobileNo",user.getMobileNo());
+        node.set("roles", objectMapper.valueToTree(user.getRoles()));
+        node.put("createdOn",String.valueOf(user.getCreatedOn()));
+        node.put("modifiedOn", String.valueOf(user.getModifiedOn()));
+        node.put("active",user.isActive());
+
+        return new ApiResponseHandler("client registered successfully", node, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
+    }
+
+
+    public ApiResponseHandler registerSuperUser(String firstName, String lastName, String username, String emailId, String mobileNo, String password, String superAdminSecret) {
+
+        User user = new User();
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmailId(emailId);
+        user.setMobileNo(mobileNo);
+        user.setUsername(username);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setActive(true);
+        user.setCreatedOn(Instant.now());
+        user.setModifiedOn(Instant.now());
+
+        Set<String> roles = new HashSet<>();
+        roles.add(User.USER_ROLE_USER);
+        roles.add(User.USER_ROLE_STORE_ADMIN);
+        roles.add(User.USER_ROLE_SUPER_ADMIN);
+
+        user.setRoles(roles);
+
+        User savedUser = publicApiRepository.save(user);
+
+        SuperAdminInfo superAdminInfo = new SuperAdminInfo();
+        superAdminInfo.setSuperAdminSecret(passwordEncoder.encode(superAdminSecret));
+        superAdminInfo.setUserId(savedUser.getId());
+        superAdminInfo.setCreatedOn(Instant.now());
+        superAdminInfo.setModifiedOn(Instant.now());
+        superAdminInfo.setActive(true);
+
+        publicApiRepository.saveSuperAdminInfo(superAdminInfo);
+
+        HashMap<Object, Object> responseMap = new HashMap<>();
+        responseMap.put("id", user.getId());
+        responseMap.put("firstName", user.getFirstName());
+        responseMap.put("lastName", user.getLastName());
+        responseMap.put("username", user.getUsername());
+        responseMap.put("emailId", user.getEmailId());
+        responseMap.put("createdOn", user.getCreatedOn());
+
+        return new ApiResponseHandler("superAdmin registered",responseMap, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
+    }
+
+    public ApiResponseHandler registerUserWithCustomRoles(String firstName, String lastName, String emailId, String mobileNo, String username, String password, String superAdminSecret, String clientSecret) {
+        return new ApiResponseHandler("customUser created successfully!!!", null, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
     }
 }
