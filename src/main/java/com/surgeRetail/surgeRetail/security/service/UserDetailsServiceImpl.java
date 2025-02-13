@@ -1,17 +1,15 @@
 package com.surgeRetail.surgeRetail.security.service;
 
-import com.surgeRetail.surgeRetail.document.userAndRoles.Store;
+import com.surgeRetail.surgeRetail.document.Item.Store;
 import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import com.surgeRetail.surgeRetail.repository.ConfidentialApiRepository;
 import com.surgeRetail.surgeRetail.repository.PublicApiRepository;
 import com.surgeRetail.surgeRetail.security.UserDetailsImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 

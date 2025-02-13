@@ -1,6 +1,6 @@
 package com.surgeRetail.surgeRetail.security;
 
-import com.surgeRetail.surgeRetail.document.userAndRoles.Store;
+import com.surgeRetail.surgeRetail.document.Item.Store;
 import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;

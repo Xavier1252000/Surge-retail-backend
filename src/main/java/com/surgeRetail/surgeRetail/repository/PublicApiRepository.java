@@ -83,5 +83,10 @@ public class PublicApiRepository {
     }
 
     public void getAllStores() {
+
+    }
+
+    public User findUserByUserId(String clientId) {
+        return mongoTemplate.findById(clientId, User.class);
     }
 }

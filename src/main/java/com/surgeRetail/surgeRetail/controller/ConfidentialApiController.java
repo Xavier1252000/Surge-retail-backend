@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Map;
 
+//    Apis can only have access to the super admins
 @RestController
 @RequestMapping("/confidential")
 public class ConfidentialApiController {
