@@ -17,7 +17,7 @@ public class ApiRequestHandler {
 
     private Map<String, Object>  map= new HashMap<>();
 
-
+//   1
     public Object getObjectValue(String key){
         if (map==null || StringUtils.isEmpty(key))
             return null;
@@ -25,6 +25,7 @@ public class ApiRequestHandler {
         return map.get(key)==null?null:map.get(key);
     }
 
+//    2.
     public <T> T getGenericObjectValue(String key, Class<T> clazz){
         if (StringUtils.isEmpty(key) || map == null){
             System.out.println("getObjectValue, either key is empty or object value is null");
@@ -46,12 +47,14 @@ public class ApiRequestHandler {
 
     }
 
+//    3.
     public String getStringValue(String key){
         if (StringUtils.isEmpty(key))
             return null;
         return String.valueOf(map.get(key));
     }
 
+//    4.
     public Float getFloatValue(String key){
         if(map==null || StringUtils.isEmpty(key))
             return null;
@@ -76,6 +79,7 @@ public class ApiRequestHandler {
         return null;
     }
 
+//    5.
     public BigDecimal getBigDecimalValue(String key){
         if (map==null || StringUtils.isEmpty(key))
             return null;
@@ -95,6 +99,7 @@ public class ApiRequestHandler {
         return null;
     }
 
+//    6.
     public Double getDoubleValue(String key){
         if (map == null || StringUtils.isEmpty(key)){
             System.out.println("getDoubleValue, either requestBody or method param is empty or null");
@@ -115,6 +120,7 @@ public class ApiRequestHandler {
         }
     }
 
+//    7.
     public Integer getIntegerValue(String key){
         if (map == null || StringUtils.isEmpty(key)){
             System.out.println("getIntValue, either requestBody or method param is empty or null");
@@ -135,6 +141,7 @@ public class ApiRequestHandler {
         }
     }
 
+//    8.
     public Long getLongValue(String key){
         if (map == null || StringUtils.isEmpty(key)){
             System.out.println("getLongValue, either requestBody or method param is empty or null");
@@ -155,6 +162,7 @@ public class ApiRequestHandler {
         }
     }
 
+//    9.
     public Short getShortValue(String key){
         if (map == null || StringUtils.isEmpty(key)){
             System.out.println("getShortValue, either requestBody or method param is empty or null");
@@ -175,6 +183,7 @@ public class ApiRequestHandler {
         }
     }
 
+//    10.
     public Byte getByteValue(String key){
         if (map == null || StringUtils.isEmpty(key)){
             System.out.println("getByteValue, either requestBody or method param is empty or null");
@@ -195,6 +204,7 @@ public class ApiRequestHandler {
         }
     }
 
+//    11.
     public Boolean getBooleanValue(String key){
         if (map == null || StringUtils.isEmpty(key)){
             System.out.println("getBooleanValue, either requestBody or method param is empty or null");
@@ -215,6 +225,7 @@ public class ApiRequestHandler {
         }
     }
 
+//    12.
     public <T> List<T> getListValue(String key, Class<T> clazz){
         ObjectMapper objectMapper = new ObjectMapper();
         if (map == null || StringUtils.isEmpty(key)){
@@ -244,6 +255,7 @@ public class ApiRequestHandler {
 //        }
     }
 
+//    13.
     public <T>Set<T> getSetValue(String key, Class<T> clazz){
         if (map == null || StringUtils.isEmpty(key)){
             System.out.println("getListValue, either map or key is empty or null");
@@ -264,6 +276,7 @@ public class ApiRequestHandler {
     }
 
 
+//    14.
     public Map<?, ?> getMapValue(String key){
         if (map == null && StringUtils.isEmpty(key))
             return null;

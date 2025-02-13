@@ -2,11 +2,15 @@ package com.surgeRetail.surgeRetail.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.surgeRetail.surgeRetail.document.Item.Item;
+import com.surgeRetail.surgeRetail.document.userAndRoles.User;
+import com.surgeRetail.surgeRetail.security.UserDetailsImpl;
 import com.surgeRetail.surgeRetail.service.ItemsApiService;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
 import io.micrometer.common.util.StringUtils;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,8 +41,15 @@ public class ItemsApiController {
     @PostMapping("/add-items-to-store")
     public ApiResponseHandler addItemsToStore(@RequestBody Map<String, Object> requestMap){
 
+        String storeId = null;
 
-        String storeId = (String) requestMap.get("storeId");
+        // if item is registered by storeAdmin, no need to manually provide storeId
+        UserDetailsImpl principal = (UserDetailsImpl) (SecurityContextHolder.getContext().getAuthentication()).getPrincipal();
+        if (principal.getUser().getRoles().contains(User.USER_ROLE_STORE_ADMIN)){
+            if (principal.getStores().size()==1)   //storeAdmin must have only one store
+                storeId = principal.getStores().get(0).getId();
+        }
+        storeId = (String) requestMap.get("storeId");
         if (StringUtils.isEmpty(storeId))
             return new ApiResponseHandler("please provide storeId",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
