@@ -18,7 +18,6 @@ import java.util.Set;
 @Document
 @Data
 public class Item extends Auditable implements Serializable {
-
     @Id
     private String id;
     private String storeId;
@@ -45,7 +44,7 @@ public class Item extends Auditable implements Serializable {
     private String skuCode; // Stock Keeping Unit (Unique identifier for inventory)
     private String barcode; // Barcode or QR code for scanning
     private String stockUnit; // Unit of measurement (e.g., "kg", "pcs", "liters")
-
+    private Integer thresholdQuantityForAddTax;  //some taxes are applicable for buying or selling more than n no of units, this field will hold that quantity after that the tax will be applicable
 //    refund and warranty
     private Boolean isReturnable; // Whether the item is returnable or not
     private Boolean isWarrantyAvailable; // Whether a warranty is provided

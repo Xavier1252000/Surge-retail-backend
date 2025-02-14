@@ -123,7 +123,7 @@ public class ApiRequestHandler {
 //    7.
     public Integer getIntegerValue(String key){
         if (map == null || StringUtils.isEmpty(key)){
-            System.out.println("getIntValue, either requestBody or method param is empty or null");
+            System.out.println("getIntValue, requestBody with provided field is empty or null");
             return null;
         }
         Object value = map.get(key);

@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -17,11 +18,11 @@ public class Cart extends Auditable {
     @Id
     private String id;
     private String customerId;    //user customer id
-    private List<CartItem> cartItems;
-    private BigDecimal totalPriceWithoutDiscount;
+    private List<CartItem> cartItems = new ArrayList<>();
+    private BigDecimal totalPriceBeforeDiscount;
     private BigDecimal discountPercentage;
+    private BigDecimal taxOnFinalPrice;
     private BigDecimal totalDiscount;
     private BigDecimal totalPriceWithDiscount;    //price with discount
     private String sessionId;   //for guest users
-    private Map<String, BigDecimal> additionalChargesForKart;
 }

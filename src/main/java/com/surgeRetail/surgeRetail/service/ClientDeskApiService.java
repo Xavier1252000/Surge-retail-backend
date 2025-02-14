@@ -16,9 +16,7 @@ import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import javax.management.ObjectName;
 import java.time.Instant;
-import java.util.List;
 import java.util.Set;
 
 @Service
@@ -84,7 +82,7 @@ public class ClientDeskApiService {
 
     public ApiResponseHandler addStore(String clientId, String storeName, String storeContactNo, String registrationNo, String gstNo, String city, String state, String country, Set<String> storeAdminIds, String pinCode) {
 
-//        in case clientId is externally provided, not taken from SecurityContextHolder
+//      in case clientId is externally provided by super-admin, not taken from SecurityContextHolder when client is creating store
         User client = publicApiRepository.findUserByUserId(clientId);
         if (client == null)
             return new ApiResponseHandler("no client found by provided clientId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);

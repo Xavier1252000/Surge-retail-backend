@@ -12,10 +12,11 @@ import java.util.Map;
 public class CartItem extends Auditable {
     private String itemId;
     private int quantity;
-    private BigDecimal price;
-    private BigDecimal totalPriceWithoutDiscount;
-    private BigDecimal discountPercentage;
-    private BigDecimal totalDiscount;
-    private BigDecimal totalPriceWithDiscount;
-    private Map<String, BigDecimal> additionalChargesForKartItem;
+    private BigDecimal unitPrice;  //price for single unit of item final price in item class
+    private BigDecimal totalCostPrice;
+    private BigDecimal totalBaseSellingPrice;   //total price for all the units sum of final price
+    private BigDecimal totalTaxPrice;
+    private BigDecimal totalAdditionalPrice;
+    private BigDecimal totalDiscountPrice;
+    private BigDecimal finalPrice;
 }

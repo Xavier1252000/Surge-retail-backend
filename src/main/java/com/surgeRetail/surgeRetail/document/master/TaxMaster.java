@@ -25,4 +25,9 @@ public class TaxMaster extends Auditable {
     private Set<String> applicableCategories = new HashSet<>();
     private Boolean inclusionOnBasePrice;  // whether tax is included on base price or will be applicable over base price;
     private String description; // Additional details about the tax
+
+    public final static String APPLICABLE_ON_ITEM = "Item";
+    public final static String APPLICABLE_ON_TOTAL_BILL = "Total Bill";
+    public final static String APPLICABLE_ON_STORE = "Store";
+    public final static String APPLICABLE_OVER_SPECIFIC_QUANTITY = "Over Specific Quantity";
 }

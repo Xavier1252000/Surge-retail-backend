@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -14,8 +15,10 @@ import java.math.BigDecimal;
 public class DiscountMaster extends Auditable {
     @Id
     private String id;
+    private Set<String> storeIds;
     private String discountName;
-    private BigDecimal discountPercentage;
+    private BigDecimal discountPercentage;   //either discountPercentage or discountAmount is required
+    private BigDecimal discountAmount;       //other one will be automatically calculated
     private String applicableOn; //totalbill, item,
     private String discountCouponCode;
 

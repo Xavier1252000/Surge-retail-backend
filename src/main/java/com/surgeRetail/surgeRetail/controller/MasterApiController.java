@@ -1,6 +1,7 @@
 package com.surgeRetail.surgeRetail.controller;
 
 import com.surgeRetail.surgeRetail.document.master.DiscountMaster;
+import com.surgeRetail.surgeRetail.document.master.TaxMaster;
 import com.surgeRetail.surgeRetail.service.MasterApiService;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
@@ -130,8 +131,8 @@ public class MasterApiController {
         }
 
         String applicableOn = (String) requestMap.get("applicableOn");
-        if (StringUtils.isEmpty(applicableOn))
-            return new ApiResponseHandler("please provide applicableOn", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        if (StringUtils.isEmpty(applicableOn) || (!applicableOn.equals(TaxMaster.APPLICABLE_ON_ITEM) && !applicableOn.equals(TaxMaster.APPLICABLE_ON_TOTAL_BILL)))
+            return new ApiResponseHandler("please select applicable on, "+TaxMaster.APPLICABLE_ON_ITEM + " or " + TaxMaster.APPLICABLE_ON_TOTAL_BILL , null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
         Boolean inclusion = (Boolean) requestMap.get("inclusionOnBasePrice");
         if (StringUtils.isEmpty(applicableOn))
