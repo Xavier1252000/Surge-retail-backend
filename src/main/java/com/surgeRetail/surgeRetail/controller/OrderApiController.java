@@ -47,5 +47,8 @@ public class OrderApiController {
 
 
     @PostMapping("/place-order")
+    public ApiResponseHandler placeOrder(){
+        return null;
+    }
 
 }
