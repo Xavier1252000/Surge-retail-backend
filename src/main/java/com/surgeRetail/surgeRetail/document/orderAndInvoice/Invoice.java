@@ -5,6 +5,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
@@ -17,12 +18,12 @@ public class Invoice extends Auditable {
     private String storeId;
     private String customerId;     //user id who will be buyer
     private List<String> invoiceItemsIds;
-    private Float netAmount;    //total amount with tax
-    private Float grossAmount;   // item total amount without tax
-    private Float grandTotal;
-    private Float taxAmount;
+    private BigDecimal netAmount;    //total amount with tax
+    private BigDecimal grossAmount;   // item total amount without tax
+    private BigDecimal grandTotal;
+    private BigDecimal taxAmount;
     private List<String> invoiceTaxIds;
-    private Boolean paymentStatus;    // payment recieved or not
+    private String paymentStatus;    // payment recieved or not
     private String invoiceTender;
     private String deliveryStatus;
     private String status;
@@ -31,11 +32,6 @@ public class Invoice extends Auditable {
     private Float totalDiscountAmount;
     private String comment;
     private String orderedByType;    // ordered by which role
-//    private Instant createdAt;
-//    private Instant updatedAt;
-//    private String createdBy;
-//    private String updatedBy;
-//    private boolean active;
 
 
     public static final String PAYMENT_STATUS_PAID = "Paid";

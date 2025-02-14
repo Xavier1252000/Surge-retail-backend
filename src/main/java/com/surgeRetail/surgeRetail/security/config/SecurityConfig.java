@@ -1,6 +1,7 @@
 package com.surgeRetail.surgeRetail.security.config;
 
 import com.surgeRetail.surgeRetail.document.userAndRoles.User;
+import com.surgeRetail.surgeRetail.security.CustomAuthenticationEntryPoint;
 import com.surgeRetail.surgeRetail.security.jwt.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,12 +26,15 @@ public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
     private final JwtFilter jwtFilter;
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
 
     public SecurityConfig(UserDetailsService userDetailsService,
-                          JwtFilter jwtFilter){
+                          JwtFilter jwtFilter,
+                          CustomAuthenticationEntryPoint authenticationEntryPoint){
 
         this.userDetailsService=userDetailsService;
         this.jwtFilter=jwtFilter;
+        this.authenticationEntryPoint = authenticationEntryPoint;
     }
 
     @Bean
@@ -51,6 +55,7 @@ public class SecurityConfig {
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(httpSecurityExceptionHandlingConfigurer -> httpSecurityExceptionHandlingConfigurer.authenticationEntryPoint(authenticationEntryPoint))
                 .build();
     }
 
