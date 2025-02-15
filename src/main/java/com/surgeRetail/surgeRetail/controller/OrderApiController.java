@@ -46,8 +46,44 @@ public class OrderApiController {
     }
 
 
-    @PostMapping("/place-order")
-    public ApiResponseHandler placeOrder(){
+    @PostMapping("/order-by-cart")
+    public ApiResponseHandler placeOrder(@RequestBody ApiRequestHandler apiRequestHandler){
+        String shippingAddressId = apiRequestHandler.getStringValue("shippingAddressId");
+        if (StringUtils.isEmpty(shippingAddressId))
+            return new ApiResponseHandler("please provide shipping address", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        Boolean termsAndCondition = apiRequestHandler.getBooleanValue("termsAndCondition");
+        if (termsAndCondition == null)
+            return new ApiResponseHandler("please agree with the terms&conditions", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true );
+
+        Boolean confirmShippingAddress = apiRequestHandler.getBooleanValue("confirmShippingAddress");
+        if (confirmShippingAddress == null)
+            return new ApiResponseHandler("please confirm the shipping address", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        return orderApiService.orderByCart(shippingAddressId, termsAndCondition, confirmShippingAddress);
+    }
+
+    @PostMapping("/direct-order")   // applicable for only single type of items can have more than one quantity
+    public ApiResponseHandler directOrder(@RequestBody ApiRequestHandler apiRequestHandler){
+        String itemId = apiRequestHandler.getStringValue("itemId");
+        if (StringUtils.isEmpty(itemId))
+            return new ApiResponseHandler("please provide itemId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        Integer quantity = apiRequestHandler.getIntegerValue("quantity");
+        if (quantity == null || quantity <1)
+            return new ApiResponseHandler("quantity can't be less than one", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        String shippingAddressId = apiRequestHandler.getStringValue("shippingAddressId");
+        return orderApiService.directOrder(itemId, quantity, shippingAddressId);
+    }
+
+    @PostMapping("/confirm-order")
+    public ApiResponseHandler confirmOrder(@RequestBody ApiRequestHandler apiRequestHandler){
+        return null;
+    }
+
+    @PostMapping("update-order-status")
+    public ApiRequestHandler updateOrderStatus(@RequestBody ApiRequestHandler apiRequestHandler){
         return null;
     }
 
