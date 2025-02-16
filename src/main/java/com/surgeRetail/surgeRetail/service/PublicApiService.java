@@ -10,6 +10,8 @@ import com.surgeRetail.surgeRetail.security.jwt.JwtToken;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -44,13 +46,11 @@ public class PublicApiService {
     }
 
 
-    public ApiResponseHandler authenticateUser(String username, String password){
+    public ResponseEntity<ApiResponseHandler> authenticateUser(String username, String password){
         User user = publicApiRepository.findUserByUsernameOrEmail(username);
         if (user==null)
-            return new ApiResponseHandler("no user found with provided username", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponseHandler("authentication failed, user not found", null, ResponseStatus.UNAUTHORIZED, ResponseStatusCode.UNAUTHORIZED, true));
         Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-        if (!authenticate.isAuthenticated())
-            return new ApiResponseHandler("authentication failed, wrong credentials", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
         String tokenString = jwtService.generateToken(username);
         JwtToken token = new JwtToken();
@@ -59,7 +59,7 @@ public class PublicApiService {
         token.setExpirationDate(jwtService.extractExpiration(tokenString));
         token.setCreationDate(new Date());
 
-        return new ApiResponseHandler("authentication successful", token, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
+        return ResponseEntity.ok(new ApiResponseHandler("authentication successful", token, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false));
     }
 
     public ApiResponseHandler registerSuperUser(String firstName, String lastName, String username, String emailId, String mobileNo, String password, String superAdminSecret) {

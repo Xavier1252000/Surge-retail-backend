@@ -51,6 +51,7 @@ public class SecurityConfig {
                         .requestMatchers("/public/**").permitAll()
                         .requestMatchers("/confidential/**").hasAuthority(User.USER_ROLE_SUPER_ADMIN)
                         .requestMatchers("/client-desk/**").hasAuthority(User.USER_ROLE_CLIENT)
+                        .requestMatchers("/permissions/**").hasAnyAuthority(User.USER_ROLE_SUPER_ADMIN, User.USER_ROLE_CLIENT)
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider())
