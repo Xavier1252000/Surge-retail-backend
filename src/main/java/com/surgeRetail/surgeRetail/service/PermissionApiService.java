@@ -1,6 +1,7 @@
 package com.surgeRetail.surgeRetail.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.surgeRetail.surgeRetail.document.permissions.ModulePermissions;
 import com.surgeRetail.surgeRetail.document.permissions.Modules;
@@ -10,6 +11,7 @@ import com.surgeRetail.surgeRetail.repository.PermissionApiRepository;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
+import io.micrometer.common.util.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -117,5 +119,23 @@ public class PermissionApiService {
         module.onCreate();
         Modules savedModule = permissionApiRepository.saveModule(module);
         return new ApiResponseHandler("Module Created",savedModule, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
+    }
+
+    public ApiResponseHandler getUserPermissions(String userId) {
+        ArrayNode arrayNode = objectMapper.createArrayNode();
+        UserPermissions userPermissions = permissionApiRepository.getUserPermissionsByUserId(userId);
+        if (userPermissions == null)
+            return new ApiResponseHandler("User have no permissions", arrayNode, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, true);
+        List<String> moduleIds = userPermissions.getModulesPermissions().stream().map(ModulePermissions::getModuleId).toList();
+        List<Modules> modulesByIds = permissionApiRepository.getAllModulesById(new ArrayList<>(moduleIds));
+        List<Modules> parentModules = modulesByIds.stream().filter(x -> StringUtils.isEmpty(x.getParentId())).toList();
+        parentModules.forEach(e->{
+            ObjectNode node = objectMapper.createObjectNode();
+            node.set("parentNode", objectMapper.valueToTree(e));
+            List<Modules> subModules = modulesByIds.stream().filter(x -> x.getParentId().equals(e.getId())).toList();
+            node.set("subModules", objectMapper.valueToTree(subModules));
+            arrayNode.add(node);
+        });
+        return new ApiResponseHandler("permissions successfully fetched", arrayNode, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
     }
 }

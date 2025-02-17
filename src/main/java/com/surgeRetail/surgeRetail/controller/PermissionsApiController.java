@@ -41,15 +41,17 @@ public class PermissionsApiController {
         String userId = apiRequestHandler.getStringValue("userId");
         if(StringUtils.isEmpty(userId))
             return new ApiResponseHandler("please provide userId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-        List<ModulePermissions> modulePermissionsList = (List<ModulePermissions>)apiRequestHandler.getListValue("modulesPermissions", ModulePermissions.class);
+        List<ModulePermissions> modulePermissionsList = apiRequestHandler.getListValue("modulesPermissions", ModulePermissions.class);
         if(CollectionUtils.isEmpty(modulePermissionsList))
             return new ApiResponseHandler("please provide modulePermissions", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
+        System.out.println(modulePermissionsList);
         if(!CollectionUtils.isEmpty(modulePermissionsList)){
             for(int i=0;i<modulePermissionsList.size();i++){
+                System.out.println(modulePermissionsList.get(i));
                 ModulePermissions modulePermissions = modulePermissionsList.get(i);
                 String moduleId = modulePermissions.getModuleId();
-                if(moduleId== null || moduleId == ""){
+                if(StringUtils.isEmpty(moduleId)){
                     int a = i+1;
                     return new ApiResponseHandler("please provide modulePermissions", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
                 }
@@ -77,6 +79,15 @@ public class PermissionsApiController {
             return new ApiResponseHandler("please provide modulePermissions", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
         }
         return permissionApiService.updateUserPermissions(userId,modulePermissionsList);
+    }
+
+    @PostMapping("/get-user-permissions")
+    public ApiResponseHandler getUserPermissions(@RequestBody ApiRequestHandler apiRequestHandler){
+        String userId = apiRequestHandler.getStringValue("userId");
+        if (StringUtils.isEmpty(userId))
+            return new ApiResponseHandler("please provide userId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        return permissionApiService.getUserPermissions(userId);
     }
 
 }
