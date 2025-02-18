@@ -3,10 +3,7 @@ package com.surgeRetail.surgeRetail.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.surgeRetail.surgeRetail.document.Item.Item;
-import com.surgeRetail.surgeRetail.document.orderAndInvoice.Cart;
-import com.surgeRetail.surgeRetail.document.orderAndInvoice.CartItem;
-import com.surgeRetail.surgeRetail.document.orderAndInvoice.Order;
-import com.surgeRetail.surgeRetail.document.orderAndInvoice.ShippingAddress;
+import com.surgeRetail.surgeRetail.document.orderAndInvoice.*;
 import com.surgeRetail.surgeRetail.repository.ItemsApiRepository;
 import com.surgeRetail.surgeRetail.repository.OrderApiRepository;
 import com.surgeRetail.surgeRetail.security.UserDetailsImpl;
@@ -19,10 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -194,6 +188,14 @@ public class OrderApiService {
         node.put("modifiedBy",order.getModifiedBy());
         node.put("active", order.getActive());
         return new ApiResponseHandler("order request sent to sellers", node, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
-
+    }
+    
+    public ApiResponseHandler generateInvoice(List<InvoiceItem> invoiceItem){
+        Invoice invoice = new Invoice();
+        invoice.setStoreId(AuthenticatedUserDetails.getUserDetails().getStores().get);
+        Long serialNo = orderApiRepository.getGreatestSerialNoInvoice().getSerialNo();
+        invoice.setSerialNo(serialNo == null ? 1L: serialNo+1L);
+        orderApiRepository.saveInvoice(invoice);
+        return null;
     }
 }

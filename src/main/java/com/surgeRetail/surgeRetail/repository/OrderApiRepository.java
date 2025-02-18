@@ -1,9 +1,8 @@
 package com.surgeRetail.surgeRetail.repository;
 
-import com.surgeRetail.surgeRetail.document.orderAndInvoice.Cart;
-import com.surgeRetail.surgeRetail.document.orderAndInvoice.Order;
-import com.surgeRetail.surgeRetail.document.orderAndInvoice.ShippingAddress;
+import com.surgeRetail.surgeRetail.document.orderAndInvoice.*;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -39,5 +38,19 @@ public class OrderApiRepository {
 
     public void saveOrder(Order order) {
         mongoTemplate.save(order);
+    }
+
+    public InvoiceItem saveInvoiceItem(InvoiceItem invoiceItem){
+        return mongoTemplate.save(invoiceItem);
+    }
+
+    public Invoice getGreatestSerialNoInvoice(){
+        Query query = new Query();
+        query.with(Sort.by(Sort.Order.desc("serialNo")));
+        return mongoTemplate.findOne(query, Invoice.class);
+    }
+
+    public void saveInvoice(Invoice invoice) {
+        mongoTemplate.save(invoice);
     }
 }

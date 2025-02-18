@@ -1,5 +1,6 @@
 package com.surgeRetail.surgeRetail.controller;
 
+import com.surgeRetail.surgeRetail.document.orderAndInvoice.InvoiceItem;
 import com.surgeRetail.surgeRetail.security.UserDetailsImpl;
 import com.surgeRetail.surgeRetail.service.OrderApiService;
 import com.surgeRetail.surgeRetail.utils.AuthenticatedUserDetails;
@@ -9,6 +10,8 @@ import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
 import io.micrometer.common.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/order")
@@ -85,6 +88,12 @@ public class OrderApiController {
     @PostMapping("update-order-status")
     public ApiRequestHandler updateOrderStatus(@RequestBody ApiRequestHandler apiRequestHandler){
         return null;
+    }
+
+    @PostMapping("/generate-invoice")     // for offline retail billing
+    public ApiResponseHandler generateInvoice(@RequestBody ApiRequestHandler apiRequestHandler){
+        List<InvoiceItem> invoiceItems = apiRequestHandler.getListValue("invoiceItems", InvoiceItem.class);
+        return orderApiService.generateInvoice(invoiceItems);
     }
 
 }

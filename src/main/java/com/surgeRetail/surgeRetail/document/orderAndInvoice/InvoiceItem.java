@@ -18,10 +18,9 @@ public class InvoiceItem extends Auditable {
     private String id;
     private String itemId;
     private int quantity;
-    private String invoiceId; // Reference to the Invoice
-    private BigDecimal price;
+    private BigDecimal pricePerItem;
     private BigDecimal totalPrice;
     private BigDecimal discount; // Discount per item
-    private List<String> invoiceItemTaxIds;
-    private BigDecimal taxRate;
+    private BigDecimal totalDiscount;
+    private BigDecimal totalTaxOnItem;
 }

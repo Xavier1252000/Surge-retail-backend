@@ -14,7 +14,7 @@ import java.util.List;
 public class Invoice extends Auditable {
     @Id
     private String id;
-    private String invoiceNumber;
+    private Long serialNo;   //invoiceNo
     private String storeId;
     private String customerId;     //user id who will be buyer
     private List<String> invoiceItemsIds;
