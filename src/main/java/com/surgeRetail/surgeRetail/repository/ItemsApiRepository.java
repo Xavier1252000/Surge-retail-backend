@@ -2,6 +2,8 @@ package com.surgeRetail.surgeRetail.repository;
 
 import com.surgeRetail.surgeRetail.document.Item.Item;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -26,5 +28,9 @@ public class ItemsApiRepository {
 
     public Item getItemById(String itemId){
         return mongoTemplate.findById(itemId, Item.class);
+    }
+
+    public List<Item> getItemByIds(List<String> itemIds) {
+        return mongoTemplate.find(new Query(Criteria.where("id").in(itemIds)), Item.class);
     }
 }

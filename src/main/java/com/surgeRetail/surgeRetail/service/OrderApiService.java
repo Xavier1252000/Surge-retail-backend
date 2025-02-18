@@ -191,10 +191,13 @@ public class OrderApiService {
     }
     
     public ApiResponseHandler generateInvoice(List<InvoiceItem> invoiceItem){
+        List<String> itemIds = invoiceItem.stream().map(x -> x.getItemId()).toList();
+        List<Item> itemByIds = itemsApiRepository.getItemByIds(itemIds);
         Invoice invoice = new Invoice();
-        invoice.setStoreId(AuthenticatedUserDetails.getUserDetails().getStores().get);
+        invoice.setStoreId(AuthenticatedUserDetails.getUserDetails().getStores().getFirst().getId());
         Long serialNo = orderApiRepository.getGreatestSerialNoInvoice().getSerialNo();
         invoice.setSerialNo(serialNo == null ? 1L: serialNo+1L);
+        invoice.setPaymentStatus(Invoice.PAYMENT_STATUS_PENDING);
         orderApiRepository.saveInvoice(invoice);
         return null;
     }
