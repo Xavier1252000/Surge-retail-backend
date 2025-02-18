@@ -15,8 +15,8 @@ public class Modules extends Auditable {
     @Id
     private String id;
     private String name;
-    private String tag;
     private String to;
+    private short serialNo;
     private String  icon;
     private String parentId;
 }

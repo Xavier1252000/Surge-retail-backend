@@ -1,7 +1,9 @@
 package com.surgeRetail.surgeRetail.utils.requestHandlers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.io.BigDecimalParser;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.common.util.StringUtils;
 import lombok.Data;
@@ -233,22 +235,13 @@ public class ApiRequestHandler {
         if (value == null)
             return null;
 
-//        if (value instanceof List<?>)
-//            return (List<T>) value;
-
         try {
-            return objectMapper.readValue(objectMapper.writeValueAsString(value), new TypeReference<List<T>>() {});
-        } catch (Exception e) {
-            System.out.println("Error parsing list: " + e.getMessage());
-            return null;
+            return objectMapper.readValue(objectMapper.writeValueAsString(value), objectMapper.getTypeFactory().constructCollectionType(List.class, clazz));
+        } catch (JsonMappingException e) {
+            throw new RuntimeException(e);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
-//        try {
-//            return objectMapper.readValue(objectMapper.writeValueAsString(value), objectMapper.getTypeFactory().constructCollectionType(List.class, clazz));
-//        } catch (JsonMappingException e) {
-//            throw new RuntimeException(e);
-//        } catch (JsonProcessingException e) {
-//            throw new RuntimeException(e);
-//        }
     }
 
 //    13.

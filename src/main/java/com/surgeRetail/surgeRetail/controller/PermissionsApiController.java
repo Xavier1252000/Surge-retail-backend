@@ -9,10 +9,7 @@ import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
 import io.micrometer.common.util.StringUtils;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -36,7 +33,7 @@ public class PermissionsApiController {
         return permissionApiService.addModule(module);
     }
 
-    @PostMapping("/add-permission")
+    @PostMapping("/add-user-permission")
     public ApiResponseHandler addUserPermission(@RequestBody ApiRequestHandler apiRequestHandler){
         String userId = apiRequestHandler.getStringValue("userId");
         if(StringUtils.isEmpty(userId))
@@ -45,10 +42,8 @@ public class PermissionsApiController {
         if(CollectionUtils.isEmpty(modulePermissionsList))
             return new ApiResponseHandler("please provide modulePermissions", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
-        System.out.println(modulePermissionsList);
         if(!CollectionUtils.isEmpty(modulePermissionsList)){
             for(int i=0;i<modulePermissionsList.size();i++){
-                System.out.println(modulePermissionsList.get(i));
                 ModulePermissions modulePermissions = modulePermissionsList.get(i);
                 String moduleId = modulePermissions.getModuleId();
                 if(StringUtils.isEmpty(moduleId)){
@@ -88,6 +83,21 @@ public class PermissionsApiController {
             return new ApiResponseHandler("please provide userId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
         return permissionApiService.getUserPermissions(userId);
+    }
+
+    @GetMapping("/get-all-modules")
+    public ApiResponseHandler getAllModules(){
+        return permissionApiService.getAllModules();
+    }
+
+    @PostMapping("/create-permission")
+    public ApiResponseHandler createPermission(@RequestBody ApiRequestHandler apiRequestHandler){
+        String name = apiRequestHandler.getStringValue("name");
+        if (StringUtils.isEmpty(name))
+            return new ApiResponseHandler("please provide name", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        String description = apiRequestHandler.getStringValue("description");
+        return permissionApiService.createPermission(name, description);
     }
 
 }

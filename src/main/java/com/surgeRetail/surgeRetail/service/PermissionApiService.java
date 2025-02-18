@@ -122,6 +122,7 @@ public class PermissionApiService {
     }
 
     public ApiResponseHandler getUserPermissions(String userId) {
+        ObjectNode headNode = objectMapper.createObjectNode();
         ArrayNode arrayNode = objectMapper.createArrayNode();
         UserPermissions userPermissions = permissionApiRepository.getUserPermissionsByUserId(userId);
         if (userPermissions == null)
@@ -129,13 +130,30 @@ public class PermissionApiService {
         List<String> moduleIds = userPermissions.getModulesPermissions().stream().map(ModulePermissions::getModuleId).toList();
         List<Modules> modulesByIds = permissionApiRepository.getAllModulesById(new ArrayList<>(moduleIds));
         List<Modules> parentModules = modulesByIds.stream().filter(x -> StringUtils.isEmpty(x.getParentId())).toList();
+
         parentModules.forEach(e->{
             ObjectNode node = objectMapper.createObjectNode();
-            node.set("parentNode", objectMapper.valueToTree(e));
+            node.set("headModule", objectMapper.valueToTree(e));
             List<Modules> subModules = modulesByIds.stream().filter(x -> x.getParentId().equals(e.getId())).toList();
             node.set("subModules", objectMapper.valueToTree(subModules));
             arrayNode.add(node);
         });
-        return new ApiResponseHandler("permissions successfully fetched", arrayNode, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
+        headNode.put("userId", userId);
+        headNode.set("userPermissions", arrayNode);
+        return new ApiResponseHandler("permissions successfully fetched", headNode, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
+    }
+
+    public ApiResponseHandler getAllModules() {
+        List<Modules> allModules = permissionApiRepository.getAllModules();
+        return new ApiResponseHandler("success", allModules, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
+    }
+
+    public ApiResponseHandler createPermission(String name, String description) {
+        Permissions permissions = new Permissions();
+        permissions.setName(name);
+        permissions.setDescription(description);
+        Permissions savedPermission = permissionApiRepository.savePermission(permissions);
+        return new ApiResponseHandler("permission added", savedPermission, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
+
     }
 }

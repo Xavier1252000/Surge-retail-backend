@@ -35,7 +35,6 @@ public class ItemsApiService {
                     .divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP) // Higher precision
                     .setScale(2, RoundingMode.HALF_UP); // Final rounding to 2 decimals
 
-            System.out.println("Profit Margin: " + profitMargin);
             item.setBaseSellingPrice(item.getCostPrice().add(profitMargin).setScale(2, RoundingMode.HALF_UP));
         } else {
             BigDecimal profitToGainPercentage = item.getBaseSellingPrice()
@@ -44,7 +43,6 @@ public class ItemsApiService {
                     .multiply(BigDecimal.valueOf(100))
                     .setScale(2, RoundingMode.HALF_UP); // Final rounding to 2 decimals
 
-            System.out.println("Profit to Gain Percentage: " + profitToGainPercentage);
             item.setProfitToGainInPercentage(profitToGainPercentage);
         }
 

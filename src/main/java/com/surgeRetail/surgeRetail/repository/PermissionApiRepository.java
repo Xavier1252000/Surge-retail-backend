@@ -64,4 +64,8 @@ public class PermissionApiRepository {
     public Modules saveModule(Modules module) {
         return mongoTemplate.save(module);
     }
+
+    public Permissions savePermission(Permissions permissions) {
+        return mongoTemplate.save(permissions);
+    }
 }
