@@ -194,6 +194,7 @@ public class OrderApiService {
         invItem.setItemId(itemId);
         invItem.setQuantity(quantity);
         invItem.setTotalBasePrice(totalPrice);
+        return new ApiResponseHandler("Invoice item saved", invItem, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, false);
     }
 
     
@@ -208,12 +209,14 @@ public class OrderApiService {
         invoice.setSerialNo(serialNo == null ? 1L: serialNo+1L);
 
         invoice.setInvoiceItemsIds(invoiceItems.stream().map(x->x.getId()).toList());
-        invoice.setGrossAmount(invoiceItems.stream().map(InvoiceItem::getFinalPrice).reduce(BigDecimal.ZERO, BigDecimal::add));
+        invoice.setGrossAmount(invoiceItems.stream().map(InvoiceItem::getTotalBasePrice).reduce(BigDecimal.ZERO, BigDecimal::add));
+        invoice.setNetAmount(invoiceItems.stream().map(InvoiceItem::getFinalPrice).reduce(BigDecimal.ZERO, BigDecimal::add));
+
+
+
 
         invoice.setPaymentStatus(Invoice.PAYMENT_STATUS_PENDING);
         orderApiRepository.saveInvoice(invoice);
         return null;
     }
-
-
 }

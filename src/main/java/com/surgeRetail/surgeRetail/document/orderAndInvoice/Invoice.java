@@ -21,13 +21,12 @@ public class Invoice extends Auditable {
     private BigDecimal netAmount;    //total amount with tax
     private List<String> invoiceTaxIds;
     private BigDecimal taxAmount;
+    private List<String> discountIds;
+    private Float totalDiscountAmount;
+    private String discountComment;
 
     private String invoiceTender;
     private String deliveryStatus;
-    private String status;
-    private List<String> discountIds;
-    private String discountComment;
-    private Float totalDiscountAmount;
 
     private BigDecimal grandTotal;
     private String paymentStatus;    // payment recieved or not

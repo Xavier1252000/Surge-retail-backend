@@ -20,6 +20,7 @@ public class InvoiceItem extends Auditable {
     private String itemId;
     private int quantity;
     private BigDecimal itemBasePrice;
+    private BigDecimal totalBasePrice;
     private Set<String> discountIds;
     private BigDecimal discountPerItem;// Discount per item
     private BigDecimal totalDiscount;
