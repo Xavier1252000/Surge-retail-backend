@@ -64,7 +64,7 @@ public class PermissionsApiController {
         return permissionApiService.addUserPermission(userId,modulePermissionsList);
     }
 
-    @PostMapping("/update-permission")
+    @PostMapping("/update-user-permission")
     public ApiResponseHandler updateUserPermissions(@RequestBody ApiRequestHandler apiRequestHandler){
         String userId = apiRequestHandler.getStringValue("userId");
         if(StringUtils.isEmpty(userId))
@@ -98,6 +98,11 @@ public class PermissionsApiController {
 
         String description = apiRequestHandler.getStringValue("description");
         return permissionApiService.createPermission(name, description);
+    }
+
+    @GetMapping("/get-all-permissions")
+    public ApiResponseHandler getAllPermissions(){
+        return permissionApiService.getAllPermissions();
     }
 
 }

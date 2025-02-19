@@ -17,7 +17,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Service
@@ -189,16 +188,32 @@ public class OrderApiService {
         node.put("active", order.getActive());
         return new ApiResponseHandler("order request sent to sellers", node, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
     }
+
+    public ApiResponseHandler saveInvoiceItem(String itemId, Integer quantity, BigDecimal rate, BigDecimal totalPrice) {
+        InvoiceItem invItem = new InvoiceItem();
+        invItem.setItemId(itemId);
+        invItem.setQuantity(quantity);
+        invItem.setTotalBasePrice(totalPrice);
+    }
+
     
-    public ApiResponseHandler generateInvoice(List<InvoiceItem> invoiceItem){
-        List<String> itemIds = invoiceItem.stream().map(x -> x.getItemId()).toList();
+    public ApiResponseHandler generateInvoice(List<InvoiceItem> invoiceItems, String customerName, String customerContactNo){
+        List<String> itemIds = invoiceItems.stream().map(x -> x.getItemId()).toList();
         List<Item> itemByIds = itemsApiRepository.getItemByIds(itemIds);
         Invoice invoice = new Invoice();
-        invoice.setStoreId(AuthenticatedUserDetails.getUserDetails().getStores().getFirst().getId());
+        invoice.setCustomerName(customerName);
+        invoice.setCustomerContactNo(customerContactNo);
+
         Long serialNo = orderApiRepository.getGreatestSerialNoInvoice().getSerialNo();
         invoice.setSerialNo(serialNo == null ? 1L: serialNo+1L);
+
+        invoice.setInvoiceItemsIds(invoiceItems.stream().map(x->x.getId()).toList());
+        invoice.setGrossAmount(invoiceItems.stream().map(InvoiceItem::getFinalPrice).reduce(BigDecimal.ZERO, BigDecimal::add));
+
         invoice.setPaymentStatus(Invoice.PAYMENT_STATUS_PENDING);
         orderApiRepository.saveInvoice(invoice);
         return null;
     }
+
+
 }

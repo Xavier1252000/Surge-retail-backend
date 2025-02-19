@@ -15,10 +15,7 @@ import io.micrometer.common.util.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -125,15 +122,31 @@ public class PermissionApiService {
         ObjectNode headNode = objectMapper.createObjectNode();
         ArrayNode arrayNode = objectMapper.createArrayNode();
         UserPermissions userPermissions = permissionApiRepository.getUserPermissionsByUserId(userId);
-        if (userPermissions == null)
-            return new ApiResponseHandler("User have no permissions", arrayNode, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, true);
+
+        if (userPermissions == null) {
+            headNode.put("userId", userId);
+            headNode.set("permissions", arrayNode);
+            return new ApiResponseHandler("User have no permissions", headNode, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, true);
+        }
+
         List<String> moduleIds = userPermissions.getModulesPermissions().stream().map(ModulePermissions::getModuleId).toList();
+        Map<String, List<String>> modulePermissions = userPermissions.getModulesPermissions().stream()
+                .collect(Collectors.toMap(
+                        ModulePermissions::getModuleId,
+                        ModulePermissions::getPermissionIds,
+                        (existing, replacement) -> {
+                            existing.addAll(replacement);
+                            return existing;
+                        }
+                ));
         List<Modules> modulesByIds = permissionApiRepository.getAllModulesById(new ArrayList<>(moduleIds));
         List<Modules> parentModules = modulesByIds.stream().filter(x -> StringUtils.isEmpty(x.getParentId())).toList();
 
         parentModules.forEach(e->{
             ObjectNode node = objectMapper.createObjectNode();
             node.set("headModule", objectMapper.valueToTree(e));
+            node.set("permissions", objectMapper.valueToTree(modulePermissions.get(e.getId())));
+
             List<Modules> subModules = modulesByIds.stream().filter(x -> x.getParentId().equals(e.getId())).toList();
             node.set("subModules", objectMapper.valueToTree(subModules));
             arrayNode.add(node);
@@ -154,6 +167,10 @@ public class PermissionApiService {
         permissions.setDescription(description);
         Permissions savedPermission = permissionApiRepository.savePermission(permissions);
         return new ApiResponseHandler("permission added", savedPermission, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
+    }
 
+    public ApiResponseHandler getAllPermissions() {
+        List<Permissions> allPermission = permissionApiRepository.getAllPermission();
+        return new ApiResponseHandler("all permissions", allPermission, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, false);
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -18,9 +19,13 @@ public class InvoiceItem extends Auditable {
     private String id;
     private String itemId;
     private int quantity;
-    private BigDecimal pricePerItem;
-    private BigDecimal totalPrice;
-    private BigDecimal discount; // Discount per item
+    private BigDecimal itemBasePrice;
+    private Set<String> discountIds;
+    private BigDecimal discountPerItem;// Discount per item
     private BigDecimal totalDiscount;
-    private BigDecimal totalTaxOnItem;
+    private Set<String> taxIds;
+    private BigDecimal taxPerItem;
+    private BigDecimal totalTax;
+    private BigDecimal finalPricePerItem;
+    private BigDecimal finalPrice;
 }

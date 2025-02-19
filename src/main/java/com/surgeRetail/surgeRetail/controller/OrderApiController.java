@@ -11,6 +11,7 @@ import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
 import io.micrometer.common.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -90,10 +91,24 @@ public class OrderApiController {
         return null;
     }
 
+    @PostMapping("/save-invoice-items")
+    public ApiResponseHandler saveInvoiceItems(@RequestBody ApiRequestHandler apiRequestHandler){
+        String itemId = apiRequestHandler.getStringValue("itemId");
+        if (StringUtils.isEmpty(itemId))
+            return new ApiResponseHandler("please provide itemId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        Integer quantity = apiRequestHandler.getIntegerValue("quantity");
+        BigDecimal rate = apiRequestHandler.getBigDecimalValue("rate");
+        BigDecimal totalPrice = apiRequestHandler.getBigDecimalValue("totalPrice");
+        return orderApiService.saveInvoiceItem(itemId, quantity, rate, totalPrice);
+    }
+
     @PostMapping("/generate-invoice")     // for offline retail billing
     public ApiResponseHandler generateInvoice(@RequestBody ApiRequestHandler apiRequestHandler){
         List<InvoiceItem> invoiceItems = apiRequestHandler.getListValue("invoiceItems", InvoiceItem.class);
-        return orderApiService.generateInvoice(invoiceItems);
+        String customerName = apiRequestHandler.getStringValue("customerName");
+        String customerContactNo = apiRequestHandler.getStringValue("customerContactNo");
+        return orderApiService.generateInvoice(invoiceItems, customerName, customerContactNo);
     }
 
 }

@@ -39,7 +39,7 @@ public class Item extends Auditable implements Serializable {
     private String description;
     private Set<String> itemImageInfoIds; // List of image IDs for the item
     private Float itemStock; // Available stock count
-    private Float stockThreshold; // Minimum stock before restocking is required
+    private Float stockThreshold; // Minimum stock before restocking is required+
     private Set<String> tutorialLinks; // Links to guides or tutorials
     private String skuCode; // Stock Keeping Unit (Unique identifier for inventory)
     private String barcode; // Barcode or QR code for scanning
