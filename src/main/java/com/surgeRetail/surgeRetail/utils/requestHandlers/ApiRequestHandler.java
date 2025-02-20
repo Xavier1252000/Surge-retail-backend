@@ -257,11 +257,13 @@ public class ApiRequestHandler {
 
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            return objectMapper.readValue(objectMapper.writeValueAsString(value), new TypeReference<Set<T>>() {});
-        } catch (Exception e) {
-            System.out.println("Error parsing Set: " + e.getMessage());
-            return null;
+            return objectMapper.readValue(objectMapper.writeValueAsString(value), objectMapper.getTypeFactory().constructCollectionType(Set.class, clazz));
+        } catch (JsonMappingException e) {
+            throw new RuntimeException(e);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
+
     }
 
 

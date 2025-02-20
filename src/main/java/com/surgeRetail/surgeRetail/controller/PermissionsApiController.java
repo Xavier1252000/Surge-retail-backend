@@ -36,9 +36,11 @@ public class PermissionsApiController {
     @PostMapping("/add-user-permission")
     public ApiResponseHandler addUserPermission(@RequestBody ApiRequestHandler apiRequestHandler){
         String userId = apiRequestHandler.getStringValue("userId");
+        System.out.println("------------------------>"+userId);
         if(StringUtils.isEmpty(userId))
             return new ApiResponseHandler("please provide userId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
         List<ModulePermissions> modulePermissionsList = apiRequestHandler.getListValue("modulesPermissions", ModulePermissions.class);
+        System.out.println("-----------------"+modulePermissionsList);
         if(CollectionUtils.isEmpty(modulePermissionsList))
             return new ApiResponseHandler("please provide modulePermissions", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
@@ -66,10 +68,13 @@ public class PermissionsApiController {
 
     @PostMapping("/update-user-permission")
     public ApiResponseHandler updateUserPermissions(@RequestBody ApiRequestHandler apiRequestHandler){
+
         String userId = apiRequestHandler.getStringValue("userId");
+        System.out.println(userId);
         if(StringUtils.isEmpty(userId))
             return new ApiResponseHandler("please provide modulePermissions", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
         List<ModulePermissions> modulePermissionsList =  apiRequestHandler.getListValue("modulesPermissions",ModulePermissions.class);
+        System.out.println(modulePermissionsList);
         if(CollectionUtils.isEmpty(modulePermissionsList)){
             return new ApiResponseHandler("please provide modulePermissions", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
         }

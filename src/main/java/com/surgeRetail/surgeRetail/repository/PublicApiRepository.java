@@ -89,4 +89,8 @@ public class PublicApiRepository {
     public User findUserByUserId(String clientId) {
         return mongoTemplate.findById(clientId, User.class);
     }
+
+    public boolean existUserByUserId(String userId) {
+        return mongoTemplate.exists(new Query(Criteria.where("id").is(userId)), User.class);
+    }
 }

@@ -2,12 +2,14 @@ package com.surgeRetail.surgeRetail.document.orderAndInvoice;
 
 import com.surgeRetail.surgeRetail.utils.Auditable;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Document
 public class Invoice extends Auditable {
@@ -43,6 +45,9 @@ public class Invoice extends Auditable {
     public static final String PAYMENT_STATUS_PAID = "Paid";
     public static final String PAYMENT_STATUS_PENDING = "Pending";
     public static final String PAYMENT_STATUS_CANCELLED = "Cancelled";
+
+    public static final String DELIVERY_STATUS_NOT_DELIVERED = "Not Delivered";
+    public static final String DELIVERY_STATUS_DELIVERED = "Delivered";
 
     public static final String GENERATION_TYPE_ONLINE = "Online";
     public static final String GENERATION_TYPE_OFFLINE = "Off Line";

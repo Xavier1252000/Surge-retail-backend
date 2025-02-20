@@ -8,6 +8,7 @@ import com.surgeRetail.surgeRetail.document.permissions.Modules;
 import com.surgeRetail.surgeRetail.document.permissions.Permissions;
 import com.surgeRetail.surgeRetail.document.permissions.UserPermissions;
 import com.surgeRetail.surgeRetail.repository.PermissionApiRepository;
+import com.surgeRetail.surgeRetail.repository.PublicApiRepository;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
@@ -23,15 +24,21 @@ public class PermissionApiService {
 
     private final PermissionApiRepository permissionApiRepository;
     private final ObjectMapper objectMapper;
+    private final PublicApiRepository publicApiRepository;
     public PermissionApiService(PermissionApiRepository permissionApiRepository,
+                                PublicApiRepository publicApiRepository,
                                 ObjectMapper objectMapper){
         this.permissionApiRepository = permissionApiRepository;
         this.objectMapper = objectMapper;
+        this.publicApiRepository = publicApiRepository;
     }
 
 
     public ApiResponseHandler addUserPermission(String userId, List<ModulePermissions> modulePermissionsList)
     {
+        if (!publicApiRepository.existUserByUserId(userId))
+            return new ApiResponseHandler("user not exists", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
         UserPermissions userPermissions = permissionApiRepository.getUserPermissionsByUserId(userId);
         if(userPermissions != null){
             return new ApiResponseHandler("Provided userId is already exist",null,ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST,true);
@@ -122,7 +129,7 @@ public class PermissionApiService {
         ObjectNode headNode = objectMapper.createObjectNode();
         ArrayNode arrayNode = objectMapper.createArrayNode();
         UserPermissions userPermissions = permissionApiRepository.getUserPermissionsByUserId(userId);
-
+        System.out.println(userPermissions);
         if (userPermissions == null) {
             headNode.put("userId", userId);
             headNode.set("permissions", arrayNode);
@@ -165,12 +172,13 @@ public class PermissionApiService {
         Permissions permissions = new Permissions();
         permissions.setName(name);
         permissions.setDescription(description);
+        permissions.onCreate();
         Permissions savedPermission = permissionApiRepository.savePermission(permissions);
         return new ApiResponseHandler("permission added", savedPermission, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
     }
 
     public ApiResponseHandler getAllPermissions() {
         List<Permissions> allPermission = permissionApiRepository.getAllPermission();
-        return new ApiResponseHandler("all permissions", allPermission, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, false);
+        return new ApiResponseHandler("all permissions", allPermission, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
     }
 }

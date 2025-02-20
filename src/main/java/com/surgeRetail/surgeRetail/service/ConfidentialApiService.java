@@ -3,6 +3,7 @@ package com.surgeRetail.surgeRetail.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.surgeRetail.surgeRetail.document.master.RoleMaster;
 import com.surgeRetail.surgeRetail.document.userAndRoles.ClientSecret;
 import com.surgeRetail.surgeRetail.document.userAndRoles.SuperAdminInfo;
 import com.surgeRetail.surgeRetail.document.userAndRoles.User;
@@ -182,5 +183,13 @@ public class ConfidentialApiService {
 
     public ApiResponseHandler registerUserWithCustomRoles(String firstName, String lastName, String emailId, String mobileNo, String username, String password, String superAdminSecret, String clientSecret) {
         return new ApiResponseHandler("customUser created successfully!!!", null, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
+    }
+
+    public ApiResponseHandler createRole(String role, String description) {
+        RoleMaster roleMaster = new RoleMaster();
+        roleMaster.setRole(role);
+        roleMaster.setDescription(description);
+        RoleMaster savedRole = confidentialApiRepository.saveRoleMaster(roleMaster);
+        return new ApiResponseHandler("role created", savedRole, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
     }
 }

@@ -1,5 +1,6 @@
 package com.surgeRetail.surgeRetail.repository;
 
+import com.surgeRetail.surgeRetail.document.master.RoleMaster;
 import com.surgeRetail.surgeRetail.document.userAndRoles.ClientSecret;
 import com.surgeRetail.surgeRetail.document.Item.Store;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -36,5 +37,9 @@ public class ConfidentialApiRepository {
 
     public List<Store> getStoreByStoreAdminId(String storeAdminId) {
         return mongoTemplate.find(new Query(Criteria.where("storeAdminId").is(storeAdminId)), Store.class);
+    }
+
+    public RoleMaster saveRoleMaster(RoleMaster roleMaster) {
+        return mongoTemplate.save(roleMaster);
     }
 }
