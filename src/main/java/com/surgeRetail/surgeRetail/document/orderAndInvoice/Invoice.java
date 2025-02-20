@@ -19,12 +19,12 @@ public class Invoice extends Auditable {
     private String storeId;
     private String customerId;     //user id who will be buyer
     private List<String> invoiceItemsIds;
-    private BigDecimal grossAmount;   // item total amount without tax
-    private BigDecimal netAmount;    //total amount with tax
+    private BigDecimal grossAmount;     // item total amount without tax
+    private BigDecimal netAmount;      //total amount with tax
     private List<String> invoiceTaxIds;
-    private BigDecimal taxAmount;
-    private List<String> discountIds;
-    private Float totalDiscountAmount;
+    private BigDecimal invoiceTaxAmount;
+    private List<String> invoiceDiscountIds;
+    private BigDecimal invoiceDiscountAmount;
     private String discountComment;
 
     private String invoiceTender;
@@ -47,10 +47,9 @@ public class Invoice extends Auditable {
     public static final String PAYMENT_STATUS_CANCELLED = "Cancelled";
 
     public static final String DELIVERY_STATUS_NOT_DELIVERED = "Not Delivered";
+    public static final String DELIVERY_STATUS_OUT_FOR_DELIVERY = "Out For Delivery";
     public static final String DELIVERY_STATUS_DELIVERED = "Delivered";
 
     public static final String GENERATION_TYPE_ONLINE = "Online";
     public static final String GENERATION_TYPE_OFFLINE = "Off Line";
-
-
 }

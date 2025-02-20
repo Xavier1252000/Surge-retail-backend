@@ -5,12 +5,14 @@ import com.surgeRetail.surgeRetail.document.master.ItemsCategoryMaster;
 import com.surgeRetail.surgeRetail.document.master.TaxMaster;
 import com.surgeRetail.surgeRetail.document.master.UnitMaster;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
+import io.micrometer.common.util.StringUtils;
 import org.springframework.boot.autoconfigure.graphql.data.GraphQlQueryByExampleAutoConfiguration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.IllegalFormatCodePointException;
 import java.util.List;
 import java.util.Set;
 
@@ -60,5 +62,37 @@ public class MasterApiRepository {
 
     public UnitMaster saveUnitMaster(UnitMaster unitMaster) {
         return mongoTemplate.save(unitMaster);
+    }
+    
+    public List<DiscountMaster> findActiveInvoiceDiscounts(String couponCode){
+        Query query = new Query();
+        Criteria activeCriteria = Criteria.where("active").is(true);
+        Criteria applicableOn = Criteria.where("applicableOn").is(DiscountMaster.DISCOUNT_APPLICABLE_ON_INVOICE);
+        Criteria couponCriteria = null;
+        if (!StringUtils.isEmpty(couponCode))
+            couponCriteria = Criteria.where("discountCouponCode").is(couponCode);
+
+        Criteria criteria = new Criteria();
+        if (couponCriteria != null) {
+            criteria.andOperator(activeCriteria, applicableOn, couponCriteria);
+        }else {
+            criteria.andOperator(activeCriteria, applicableOn);
+        }
+        query.addCriteria(criteria);
+        return mongoTemplate.find(query, DiscountMaster.class);
+    }
+
+
+    public List<TaxMaster> findActiveInvoiceTaxMaster(){
+        Query query = new Query();
+        Criteria activeCriteria = Criteria.where("active").is(true);
+        Criteria applicableOn = Criteria.where("applicableOn").is(TaxMaster.APPLICABLE_ON_INVOICE);
+        Criteria inclusionOnBasePriceCriteria = Criteria.where("inclusionOnBasePrice").is(false);
+
+        Criteria criteria = new Criteria();
+        criteria.andOperator(activeCriteria, applicableOn, inclusionOnBasePriceCriteria);
+
+        query.addCriteria(criteria);
+        return mongoTemplate.find(query, TaxMaster.class);
     }
 }

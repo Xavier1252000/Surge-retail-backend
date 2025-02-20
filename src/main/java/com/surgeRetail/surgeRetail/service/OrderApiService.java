@@ -3,8 +3,11 @@ package com.surgeRetail.surgeRetail.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.surgeRetail.surgeRetail.document.Item.Item;
+import com.surgeRetail.surgeRetail.document.master.DiscountMaster;
+import com.surgeRetail.surgeRetail.document.master.TaxMaster;
 import com.surgeRetail.surgeRetail.document.orderAndInvoice.*;
 import com.surgeRetail.surgeRetail.repository.ItemsApiRepository;
+import com.surgeRetail.surgeRetail.repository.MasterApiRepository;
 import com.surgeRetail.surgeRetail.repository.OrderApiRepository;
 import com.surgeRetail.surgeRetail.security.UserDetailsImpl;
 import com.surgeRetail.surgeRetail.utils.AuthenticatedUserDetails;
@@ -24,13 +27,16 @@ public class OrderApiService {
     private final OrderApiRepository orderApiRepository;
     private final ItemsApiRepository itemsApiRepository;
     private final ObjectMapper objectMapper;
+    private final MasterApiRepository masterApiRepository;
 
     public OrderApiService(OrderApiRepository orderApiRepository,
                            ItemsApiRepository itemsApiRepository,
-                           ObjectMapper objectMapper){
+                           ObjectMapper objectMapper,
+                           MasterApiRepository masterApiRepository){
         this.orderApiRepository = orderApiRepository;
         this.itemsApiRepository = itemsApiRepository;
         this.objectMapper = objectMapper;
+        this.masterApiRepository = masterApiRepository;
     }
     public ApiResponseHandler addItemToCart(String itemId, Integer quantity) {
 
@@ -198,7 +204,7 @@ public class OrderApiService {
     }
 
     
-    public ApiResponseHandler generateInvoice(List<InvoiceItem> invoiceItems, String customerName, String customerContactNo){
+    public ApiResponseHandler generateInvoice(List<InvoiceItem> invoiceItems, BigDecimal taxOverTotalPrice, BigDecimal discountOverTotalPrice, String customerName, String customerContactNo, String couponCode, String deliveryStatus, String paymentStatus, BigDecimal grandTotal){
         List<String> itemIds = invoiceItems.stream().map(x -> x.getItemId()).toList();
         List<Item> itemByIds = itemsApiRepository.getItemByIds(itemIds);
         Invoice invoice = new Invoice();
@@ -212,11 +218,20 @@ public class OrderApiService {
         invoice.setGrossAmount(invoiceItems.stream().map(InvoiceItem::getTotalBasePrice).reduce(BigDecimal.ZERO, BigDecimal::add));
         invoice.setNetAmount(invoiceItems.stream().map(InvoiceItem::getFinalPrice).reduce(BigDecimal.ZERO, BigDecimal::add));
 
+        invoice.setInvoiceTaxAmount(taxOverTotalPrice);
+        invoice.setInvoiceDiscountAmount(discountOverTotalPrice);
 
+        List<DiscountMaster> activeInvoiceDiscounts = masterApiRepository.findActiveInvoiceDiscounts(couponCode);
+        List<String> activeInvoiceDiscountIds = activeInvoiceDiscounts.stream().map(x -> x.getId()).toList();
+        invoice.setInvoiceDiscountIds(activeInvoiceDiscountIds);
 
+        List<TaxMaster> activeInvoiceTaxMaster = masterApiRepository.findActiveInvoiceTaxMaster();
+        List<String> activeInvoiceTaxMasterIds = activeInvoiceTaxMaster.stream().map(x -> x.getId()).toList();
+        invoice.setInvoiceTaxIds(activeInvoiceTaxMasterIds);
+        invoice.setPaymentStatus(paymentStatus);
+        invoice.setDeliveryStatus(deliveryStatus);
 
-
-        invoice.setPaymentStatus(Invoice.PAYMENT_STATUS_PENDING);
+        invoice.setGrandTotal(grandTotal);
         orderApiRepository.saveInvoice(invoice);
         return null;
     }

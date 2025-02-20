@@ -131,8 +131,8 @@ public class MasterApiController {
         }
 
         String applicableOn = (String) requestMap.get("applicableOn");
-        if (StringUtils.isEmpty(applicableOn) || (!applicableOn.equals(TaxMaster.APPLICABLE_ON_ITEM) && !applicableOn.equals(TaxMaster.APPLICABLE_ON_TOTAL_BILL)))
-            return new ApiResponseHandler("please select applicable on, "+TaxMaster.APPLICABLE_ON_ITEM + " or " + TaxMaster.APPLICABLE_ON_TOTAL_BILL , null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        if (StringUtils.isEmpty(applicableOn) || (!applicableOn.equals(TaxMaster.APPLICABLE_ON_ITEM) && !applicableOn.equals(TaxMaster.APPLICABLE_ON_INVOICE)))
+            return new ApiResponseHandler("please select applicable on, "+TaxMaster.APPLICABLE_ON_ITEM + " or " + TaxMaster.APPLICABLE_ON_INVOICE , null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
         Boolean inclusion = (Boolean) requestMap.get("inclusionOnBasePrice");
         if (StringUtils.isEmpty(applicableOn))
