@@ -9,12 +9,10 @@ import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
 import io.micrometer.common.util.StringUtils;
+import jakarta.mail.Multipart;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -195,6 +193,11 @@ public class ItemsApiController {
         item.setExpiryDate(expiryDate);
 
         return itemsApiService.addItemToStore(item);
+    }
+
+    @PostMapping("upload-item-images")
+    public ApiResponseHandler uploadItemImages(@RequestPart("images")List<Multipart> itemImages){
+        return null;
     }
 
 }
