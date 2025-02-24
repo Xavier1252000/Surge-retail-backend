@@ -5,6 +5,7 @@ import com.surgeRetail.surgeRetail.document.Item.Item;
 import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import com.surgeRetail.surgeRetail.security.UserDetailsImpl;
 import com.surgeRetail.surgeRetail.service.ItemsApiService;
+import com.surgeRetail.surgeRetail.utils.requestHandlers.ApiRequestHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
@@ -13,15 +14,16 @@ import jakarta.mail.Multipart;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.Period;
 import java.time.format.DateTimeParseException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @RestController
 @RequestMapping("/items")
@@ -196,8 +198,10 @@ public class ItemsApiController {
     }
 
     @PostMapping("upload-item-images")
-    public ApiResponseHandler uploadItemImages(@RequestPart("images")List<Multipart> itemImages){
+    public ApiResponseHandler uploadItemImages(@RequestPart("itemImages")List<MultipartFile> itemImages, @RequestBody ApiRequestHandler apiRequestHandler){
+        List<File> images = new ArrayList<>();
         return null;
+
     }
 
 }

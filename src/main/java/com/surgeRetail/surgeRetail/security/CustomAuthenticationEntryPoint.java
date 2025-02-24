@@ -18,6 +18,12 @@ import java.util.Map;
 @Component
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
+    private final ObjectMapper objectMapper;
+
+    public CustomAuthenticationEntryPoint(ObjectMapper objectMapper){
+        this.objectMapper = objectMapper;
+    }
+
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException, ServletException {
@@ -28,13 +34,19 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
         // Creating JSON response
-        ApiResponseHandler errorResponse;
+        ApiResponseHandler errorResponse = null;
+
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            errorResponse = new ApiResponseHandler("please provide auth token", null, ResponseStatus.UNAUTHORIZED, HttpServletResponse.SC_UNAUTHORIZED, true);
+            response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+            return;
+        }
+
+
         if (expired==null){
             errorResponse = new ApiResponseHandler("token expired", null, ResponseStatus.UNAUTHORIZED, HttpServletResponse.SC_UNAUTHORIZED, true);
-        }else {
-            errorResponse = new ApiResponseHandler("incorrect password", null, ResponseStatus.UNAUTHORIZED, HttpServletResponse.SC_UNAUTHORIZED, true);
         }
-        ObjectMapper objectMapper = new ObjectMapper();
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 }
