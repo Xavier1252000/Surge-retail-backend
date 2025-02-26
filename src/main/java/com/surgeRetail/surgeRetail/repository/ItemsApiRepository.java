@@ -1,6 +1,7 @@
 package com.surgeRetail.surgeRetail.repository;
 
 import com.surgeRetail.surgeRetail.document.Item.Item;
+import com.surgeRetail.surgeRetail.document.Item.ItemImageInfo;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -32,5 +33,13 @@ public class ItemsApiRepository {
 
     public List<Item> getItemByIds(List<String> itemIds) {
         return mongoTemplate.find(new Query(Criteria.where("id").in(itemIds)), Item.class);
+    }
+
+    public Item findItemById(String itemId) {
+        return mongoTemplate.findById(itemId, Item.class);
+    }
+
+    public ItemImageInfo saveItemImageInfo(ItemImageInfo itemImageInfo) {
+        return mongoTemplate.save(itemImageInfo);
     }
 }

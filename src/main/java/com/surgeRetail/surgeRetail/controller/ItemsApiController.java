@@ -11,6 +11,7 @@ import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
 import io.micrometer.common.util.StringUtils;
 import jakarta.mail.Multipart;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.Period;
@@ -124,7 +126,7 @@ public class ItemsApiController {
         String description = (String) requestMap.get("description");
 
         List<String> imageInfoIds = (List<String>)requestMap.get("itemImageInfoIds");
-        Set<String> itemImageInfoIds = new HashSet<>(imageInfoIds);
+        List<String> itemImageInfoIds = new ArrayList<>(imageInfoIds);
 
         String stock = (String) requestMap.get("itemStock");
         Float itemStock = null;
@@ -197,11 +199,28 @@ public class ItemsApiController {
         return itemsApiService.addItemToStore(item);
     }
 
-    @PostMapping("upload-item-images")
-    public ApiResponseHandler uploadItemImages(@RequestPart("itemImages")List<MultipartFile> itemImages, @RequestBody ApiRequestHandler apiRequestHandler){
+    @PostMapping(value = "/upload-item-images", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    public ApiResponseHandler uploadItemImages(@RequestPart List<MultipartFile> file, @RequestPart String itemId) throws IOException {
         List<File> images = new ArrayList<>();
-        return null;
 
+        try {
+
+            for (MultipartFile m : file){
+                File convFile = new File(Objects.requireNonNull(m.getOriginalFilename()));
+                convFile.createNewFile();
+                FileOutputStream fos = new FileOutputStream(convFile);
+                fos.write(m.getBytes());
+                fos.close();
+                images.add(convFile);
+        }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        if (StringUtils.isEmpty(itemId))
+            return new ApiResponseHandler("please provide itemId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        return itemsApiService.addItemImages(itemId, images);
     }
 
 }

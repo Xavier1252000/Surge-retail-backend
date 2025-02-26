@@ -37,7 +37,7 @@ public class Item extends Auditable implements Serializable {
     private Set<String> categoryIds; // Reference to the category this item belongs to
     private String supplierId; // Reference to supplier/vendor
     private String description;
-    private Set<String> itemImageInfoIds; // List of image IDs for the item
+    private List<String> itemImageInfoIds; // List of image IDs for the item
     private Float itemStock; // Available stock count
     private Float stockThreshold; // Minimum stock before restocking is required+
     private Set<String> tutorialLinks; // Links to guides or tutorials

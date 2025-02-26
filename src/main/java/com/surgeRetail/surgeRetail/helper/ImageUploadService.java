@@ -1,20 +1,20 @@
-package com.surgeRetail.surgeRetail.controller;
+package com.surgeRetail.surgeRetail.helper;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-@RestController
-@RequestMapping("/upload")
-public class UploadApiController {
+@Component
+public class ImageUploadService {
 
     @Value("${CLOUDINARY_URL}")
     String cloudinaryUrl;
@@ -23,20 +23,23 @@ public class UploadApiController {
     private Cloudinary cloudinary;
 
     @GetMapping("/file")
-    public Map<String, Object> imageUpload() throws IOException {
-        File file = new File("/home/nikhil-shukla/Downloads/icons8-chat-94.png");
-
-        Map params = ObjectUtils.asMap(
-                "public_id", "a.txt",
-                "overwrite", true,
-                "notification_url", "",
-                "resource_type", "image"
-        );
-        return cloudinary.uploader().upload(file, params);
-    }
-
-
-
+    public List<Map<String, Object>> imagesUpload(List<File> files) throws IOException {
+        List<Map<String, Object>> response = new ArrayList<>();
+        try {
+            for (File file : files) {
+                Map params = ObjectUtils.asMap(
+                        "public_id", file.getName(),
+                        "overwrite", true,
+                        "notification_url", "",
+                        "resource_type", "image"
+                );
+                Map upload = cloudinary.uploader().upload(file, params);
+                response.add(upload);
+            }
+        } catch (Exception E) {
+            return null;
+        }
+        return response;
 
 
 //    public File getTempFile(MultipartFile multipartFile)
@@ -55,4 +58,6 @@ public class UploadApiController {
 //
 //        return file;
 //    }
+    }
 }
+

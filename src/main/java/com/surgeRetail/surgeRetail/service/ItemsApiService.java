@@ -1,30 +1,37 @@
 package com.surgeRetail.surgeRetail.service;
 
 import com.surgeRetail.surgeRetail.document.Item.Item;
+import com.surgeRetail.surgeRetail.document.Item.ItemImageInfo;
 import com.surgeRetail.surgeRetail.document.master.DiscountMaster;
 import com.surgeRetail.surgeRetail.document.master.TaxMaster;
+import com.surgeRetail.surgeRetail.helper.ImageUploadService;
 import com.surgeRetail.surgeRetail.repository.ItemsApiRepository;
 import com.surgeRetail.surgeRetail.repository.MasterApiRepository;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class ItemsApiService {
     private final ItemsApiRepository itemsApiRepository;
     private final MasterApiRepository masterApiRepository;
+    private final ImageUploadService imageUploadService;
 
     public ItemsApiService(ItemsApiRepository itemsApiRepository,
-                           MasterApiRepository masterApiRepository){
+                           MasterApiRepository masterApiRepository,
+                           ImageUploadService imageUploadService){
         this.itemsApiRepository = itemsApiRepository;
         this.masterApiRepository = masterApiRepository;
+        this.imageUploadService = imageUploadService;
     }
     public ApiResponseHandler addItemToStore(Item item) {
 
@@ -94,5 +101,31 @@ public class ItemsApiService {
 
         return new ApiResponseHandler("item added successfully to store", item, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
 
+    }
+
+    public ApiResponseHandler addItemImages(String itemId, List<File> images) throws IOException {
+        Item item = itemsApiRepository.findItemById(itemId);
+        if (item == null)
+            return new ApiResponseHandler("item not found by provided id", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        List<Map<String, Object>> response = imageUploadService.imagesUpload(images);
+        List<String> imageInfoIds = new ArrayList<>();
+        for (Map<String, Object> m:response){
+            ItemImageInfo itemImageInfo = new ItemImageInfo();
+            itemImageInfo.setImageUrl((String) m.get("secure_url"));
+            itemImageInfo.setItemId(itemId);
+            itemImageInfo.setImgUploadResponse(m);
+            itemImageInfo.onCreate();
+            ItemImageInfo savedImageInfo = itemsApiRepository.saveItemImageInfo(itemImageInfo);
+            imageInfoIds.add(savedImageInfo.getId());
+        }
+        if (CollectionUtils.isEmpty(item.getItemImageInfoIds())){
+            item.setItemImageInfoIds(imageInfoIds);
+        }else {
+            item.getItemImageInfoIds().addAll(imageInfoIds);
+        }
+        itemsApiRepository.saveItem(item);
+
+        return new ApiResponseHandler("images uploaded successfully", item, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
     }
 }
