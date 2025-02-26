@@ -12,6 +12,7 @@ import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -103,12 +104,12 @@ public class ItemsApiService {
 
     }
 
-    public ApiResponseHandler addItemImages(String itemId, List<File> images) throws IOException {
+    public ApiResponseHandler addItemImages(String itemId, List<MultipartFile> images) throws IOException {
         Item item = itemsApiRepository.findItemById(itemId);
         if (item == null)
             return new ApiResponseHandler("item not found by provided id", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
-        List<Map<String, Object>> response = imageUploadService.imagesUpload(images);
+        List<Map<String, Object>> response = imageUploadService.uploadMultipartFiles(images);
         List<String> imageInfoIds = new ArrayList<>();
         for (Map<String, Object> m:response){
             ItemImageInfo itemImageInfo = new ItemImageInfo();

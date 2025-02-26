@@ -203,24 +203,10 @@ public class ItemsApiController {
     public ApiResponseHandler uploadItemImages(@RequestPart List<MultipartFile> file, @RequestPart String itemId) throws IOException {
         List<File> images = new ArrayList<>();
 
-        try {
-
-            for (MultipartFile m : file){
-                File convFile = new File(Objects.requireNonNull(m.getOriginalFilename()));
-                convFile.createNewFile();
-                FileOutputStream fos = new FileOutputStream(convFile);
-                fos.write(m.getBytes());
-                fos.close();
-                images.add(convFile);
-        }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
         if (StringUtils.isEmpty(itemId))
             return new ApiResponseHandler("please provide itemId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
-        return itemsApiService.addItemImages(itemId, images);
+        return itemsApiService.addItemImages(itemId, file);
     }
 
 }
