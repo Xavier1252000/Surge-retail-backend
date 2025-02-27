@@ -5,6 +5,7 @@ import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
 import io.micrometer.common.util.StringUtils;
+import jakarta.mail.MessagingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -57,7 +58,7 @@ public class PublicApiController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponseHandler> login(@RequestBody Map<String, Object> requestMap){
+    public ResponseEntity<ApiResponseHandler> login(@RequestBody Map<String, Object> requestMap) throws MessagingException {
         String username = (String) requestMap.get("username");
         if (StringUtils.isEmpty(username))
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponseHandler("authentication failed, wrong credentials", null, ResponseStatus.UNAUTHORIZED, ResponseStatusCode.UNAUTHORIZED, true));

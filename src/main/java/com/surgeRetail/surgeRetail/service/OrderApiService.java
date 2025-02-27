@@ -6,6 +6,8 @@ import com.surgeRetail.surgeRetail.document.Item.Item;
 import com.surgeRetail.surgeRetail.document.master.DiscountMaster;
 import com.surgeRetail.surgeRetail.document.master.TaxMaster;
 import com.surgeRetail.surgeRetail.document.orderAndInvoice.*;
+import com.surgeRetail.surgeRetail.mailServices.services.EmailService;
+import com.surgeRetail.surgeRetail.mailServices.services.EmailServiceImpl;
 import com.surgeRetail.surgeRetail.repository.ItemsApiRepository;
 import com.surgeRetail.surgeRetail.repository.MasterApiRepository;
 import com.surgeRetail.surgeRetail.repository.OrderApiRepository;
@@ -28,15 +30,18 @@ public class OrderApiService {
     private final ItemsApiRepository itemsApiRepository;
     private final ObjectMapper objectMapper;
     private final MasterApiRepository masterApiRepository;
+    private final EmailService emailService;
 
     public OrderApiService(OrderApiRepository orderApiRepository,
                            ItemsApiRepository itemsApiRepository,
                            ObjectMapper objectMapper,
-                           MasterApiRepository masterApiRepository){
+                           MasterApiRepository masterApiRepository,
+                           EmailServiceImpl emailService){
         this.orderApiRepository = orderApiRepository;
         this.itemsApiRepository = itemsApiRepository;
         this.objectMapper = objectMapper;
         this.masterApiRepository = masterApiRepository;
+        this.emailService = emailService;
     }
     public ApiResponseHandler addItemToCart(String itemId, Integer quantity) {
 

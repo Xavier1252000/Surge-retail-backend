@@ -3,6 +3,9 @@ package com.surgeRetail.surgeRetail.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.surgeRetail.surgeRetail.document.userAndRoles.SuperAdminInfo;
 import com.surgeRetail.surgeRetail.document.userAndRoles.User;
+import com.surgeRetail.surgeRetail.mailServices.EmailDetails;
+import com.surgeRetail.surgeRetail.mailServices.services.EmailService;
+import com.surgeRetail.surgeRetail.mailServices.services.EmailServiceImpl;
 import com.surgeRetail.surgeRetail.repository.ConfidentialApiRepository;
 import com.surgeRetail.surgeRetail.repository.PublicApiRepository;
 import com.surgeRetail.surgeRetail.security.jwt.JwtService;
@@ -10,6 +13,7 @@ import com.surgeRetail.surgeRetail.security.jwt.JwtToken;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
+import jakarta.mail.MessagingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,6 +33,7 @@ public class PublicApiService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final EmailService emailService;
     private final ConfidentialApiRepository confidentialApiRepository;
 
     public PublicApiService(PublicApiRepository publicApiRepository,
@@ -36,21 +41,30 @@ public class PublicApiService {
                             BCryptPasswordEncoder passwordEncoder,
                             AuthenticationManager authenticationManager,
                             JwtService jwtService,
+                            EmailServiceImpl emailService,
                             ConfidentialApiRepository confidentialApiRepository){
         this.publicApiRepository = publicApiRepository;
         this.objectMapper = objectMapper;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
+        this.emailService = emailService;
         this.confidentialApiRepository = confidentialApiRepository;
     }
 
 
-    public ResponseEntity<ApiResponseHandler> authenticateUser(String username, String password){
+    public ResponseEntity<ApiResponseHandler> authenticateUser(String username, String password) throws MessagingException {
         User user = publicApiRepository.findUserByUsernameOrEmail(username);
         if (user==null)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponseHandler("authentication failed, user not found", null, ResponseStatus.UNAUTHORIZED, ResponseStatusCode.UNAUTHORIZED, true));
         Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+
+        String response = emailService.sendEmailWithImage(
+                "ns1252000@gmail.com",
+                "Subject: Test Email with Image",
+                "Please find the attached image.",
+                "/home/nikhil-shukla/Downloads/Resume Nikhil-.pdf"
+        );
 
         String tokenString = jwtService.generateToken(username);
         JwtToken token = new JwtToken();
@@ -58,6 +72,18 @@ public class PublicApiService {
         token.setUser(user);
         token.setExpirationDate(jwtService.extractExpiration(tokenString));
         token.setCreationDate(new Date());
+
+        EmailDetails emailDetails = new EmailDetails();
+        emailDetails.setSubject("new login");
+        emailDetails.setRecipient(user.getEmailId());
+        emailDetails.setMailBody("new login from the anonymous system");
+        emailDetails.setCreatedAt(Instant.now());
+        try {
+            emailService.sendEmailWithAttachment(emailDetails);
+        }catch (Exception e){
+            System.out.println(e);
+        }
+
 
         return ResponseEntity.ok(new ApiResponseHandler("authentication successful", token, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false));
     }

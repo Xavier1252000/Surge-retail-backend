@@ -4,12 +4,15 @@ import com.surgeRetail.surgeRetail.mailServices.EmailDetails;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Service;
 
 import java.io.File;
 
+@Service
 public class EmailServiceImpl implements EmailService{
 
     @Value("${spring.mail.username}")
@@ -56,10 +59,62 @@ public class EmailServiceImpl implements EmailService{
         messageHelper.setFrom(sender);
         messageHelper.setTo(emailDetails.getRecipient());
         messageHelper.setSubject(emailDetails.getSubject());
-        File file = (File) emailDetails.getAttachment();
-        messageHelper.setSubject(emailDetails.getSubject());
-        messageHelper.addAttachment(file.getName(), file);
-        javaMailSender.send(mimeMessage);
-        return "mail send successfully!!!";
+
+        // Get file path from EmailDetails (assuming it contains the file path)
+        String filePath = "/home/nikhil-shukla/Downloads/tree2.jpg";
+        try {
+            if (filePath != null) {
+                File file = new File(filePath);
+                if (file.exists()) {
+                    FileSystemResource fileSystemResource = new FileSystemResource(file);
+                    messageHelper.addAttachment(file.getName(), fileSystemResource);
+
+                    System.out.println(filePath + "   "+ file.getAbsolutePath()+"   "+file.getName());
+                } else {
+                    System.err.println("Attachment file not found: " + filePath);
+                }
+            }
+        }catch (Exception e){
+            System.out.println(e);
+        }
+
+        try {
+            javaMailSender.send(mimeMessage);
+        }catch (Exception e){
+            System.out.println(2+"   "+e);
+        }
+
+        return "Mail sent successfully!";
     }
+
+
+
+    @Override
+    public String sendEmailWithImage(String recipient, String subject, String text, String imagePath) throws MessagingException {
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, true);
+
+        try {
+            messageHelper.setFrom(sender);
+            messageHelper.setTo(recipient);
+            messageHelper.setSubject(subject);
+            messageHelper.setText(text, true); // `true` enables HTML content
+
+            // Attach Image File
+            File file = new File(imagePath);
+            if (file.exists()) {
+                FileSystemResource fileResource = new FileSystemResource(file);
+                messageHelper.addAttachment(file.getName(), fileResource);
+            } else {
+                return "Image file not found!";
+            }
+
+            javaMailSender.send(mimeMessage);
+            return "Mail sent successfully with image attachment!";
+        } catch (Exception e) {
+            return "Error while sending mail: " + e.getMessage();
+        }
+    }
+
+
 }

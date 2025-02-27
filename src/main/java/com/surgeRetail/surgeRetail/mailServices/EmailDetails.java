@@ -13,6 +13,5 @@ public class EmailDetails {
     private String recipient;
     private String mailBody;
     private String subject;
-    private MultipartFile attachment;
     private Instant createdAt;
 }
