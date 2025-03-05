@@ -10,16 +10,12 @@ import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
 import io.micrometer.common.util.StringUtils;
-import jakarta.mail.Multipart;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -51,10 +47,13 @@ public class ItemsApiController {
             if (principal.getStores().size()==1)   //storeAdmin must have only one store
                 storeId = principal.getStores().get(0).getId();
         }
-        storeId = (String) requestMap.get("storeId");
+
+        //  if user is not a store admin, and client or some other authoritative is trying to add item, we have to manually provide the storeId
+        if (StringUtils.isEmpty(storeId))
+            storeId = (String) requestMap.get("storeId");
+
         if (StringUtils.isEmpty(storeId))
             return new ApiResponseHandler("please provide storeId",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-
 
         String itemName = (String) requestMap.get("itemName");
         if (StringUtils.isEmpty(itemName))
@@ -209,4 +208,133 @@ public class ItemsApiController {
         return itemsApiService.addItemImages(itemId, file);
     }
 
+    @PostMapping("/update-item")
+    public ApiResponseHandler updateItem(@RequestBody ApiRequestHandler apiRequestHandler){
+        String itemId = apiRequestHandler.getStringValue("itemId");
+        if (StringUtils.isEmpty(itemId))
+            return new ApiResponseHandler("please provide itemId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        String storeId = null;
+
+        // if item is registered by storeAdmin, no need to manually provide storeId
+        UserDetailsImpl principal = (UserDetailsImpl) (SecurityContextHolder.getContext().getAuthentication()).getPrincipal();
+        if (principal.getUser().getRoles().contains(User.USER_ROLE_STORE_ADMIN)){
+            if (principal.getStores().size()==1)   //storeAdmin must have only one store
+                storeId = principal.getStores().get(0).getId();
+        }
+
+        //  if user is not a store admin, and client or some other authoritative is trying to add item, we have to manually provide the storeId
+        if (StringUtils.isEmpty(storeId))
+            storeId = apiRequestHandler.getStringValue("storeId");
+
+        if (StringUtils.isEmpty(storeId))
+            return new ApiResponseHandler("please provide storeId",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        String itemName = apiRequestHandler.getStringValue("itemName");
+        if (StringUtils.isEmpty(itemName))
+            return new ApiResponseHandler("please provide itemName",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        BigDecimal costPrice = apiRequestHandler.getBigDecimalValue("costPrice");
+        if(costPrice == null || costPrice.compareTo(BigDecimal.ZERO)<=0)
+            return new ApiResponseHandler("please provide valid costPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        BigDecimal profitToGainInPercentage = apiRequestHandler.getBigDecimalValue("profitToGainInPercentage");
+
+        BigDecimal baseSellingPrice = apiRequestHandler.getBigDecimalValue("baseSellingPrice");
+
+        if (profitToGainInPercentage != null && baseSellingPrice != null || profitToGainInPercentage == null && baseSellingPrice == null)      // checking both baseSellingPrice and profitToGainInPercentage should not be present
+            return new ApiResponseHandler("please provide any one profitToGainInPercentage or baseSellingPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        if (profitToGainInPercentage != null && profitToGainInPercentage.compareTo(BigDecimal.ZERO) < 0){
+            return new ApiResponseHandler("please provide valid values in profitToGainInPercentage", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        }
+
+        if (baseSellingPrice != null && baseSellingPrice.compareTo(BigDecimal.ZERO) < 0){
+            return new ApiResponseHandler("please provide valid values in baseSellingPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        }
+
+
+        BigDecimal additionalPrice = apiRequestHandler.getBigDecimalValue("additionalPrice");
+        if (additionalPrice != null && additionalPrice.compareTo(BigDecimal.ZERO) < 0)
+            return new ApiResponseHandler("additionalPrice can't be less than zero", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        String stockUnit = apiRequestHandler.getStringValue("stockUnit");
+        if (StringUtils.isEmpty(stockUnit))
+            return new ApiResponseHandler("please provide stockUnit",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        Set<String> applicableTaxes = apiRequestHandler.getSetValue("applicableTaxes", String.class);
+
+        Set<String> discountMasterIds = apiRequestHandler.getSetValue("discountMasterIds", String.class);
+
+        String brand = apiRequestHandler.getStringValue("brand");
+
+        Set<String> categoryIds = apiRequestHandler.getSetValue("categoryIds", String.class);
+
+        String supplierId = apiRequestHandler.getStringValue("supplierId");
+
+        String description = apiRequestHandler.getStringValue("description");
+
+        Float itemStock = apiRequestHandler.getFloatValue("itemStock");
+        if (itemStock == null || itemStock < 0)
+            return new ApiResponseHandler("itemStock can't be negative", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        Float stockThreshold =  apiRequestHandler.getFloatValue("stockThreshold");
+        if (stockThreshold == null || stockThreshold < 0)
+            return new ApiResponseHandler("please provide valid values in stockThreshold can be integer or decimal", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        Set<String> tutorialLinks = apiRequestHandler.getSetValue("tutorialLinks", String.class);
+
+        String skuCode = apiRequestHandler.getStringValue("skuCode");
+        String barcode = apiRequestHandler.getStringValue("barcode");
+
+        Boolean isReturnable = apiRequestHandler.getBooleanValue("isReturnable");
+        Boolean isWarrantyAvailable = apiRequestHandler.getBooleanValue("isWarrantyAvailable");
+
+        Integer warrantyYears = apiRequestHandler.getIntegerValue("warrantyPeriodYears");
+        Integer warrantyMonths = apiRequestHandler.getIntegerValue("warrantyPeriodMonths");
+        Integer warrantyDays = apiRequestHandler.getIntegerValue("warrantyPeriodDays");
+        Period period = Period.of(warrantyYears, warrantyMonths, warrantyDays);
+
+        Instant expiryDate = apiRequestHandler.getInstantValue("expiryDate");
+
+        Item item = new Item();
+        item.setId(itemId);
+        item.setStoreId(storeId);
+        item.setItemName(itemName);
+        item.setCostPrice(costPrice);
+        item.setProfitToGainInPercentage(profitToGainInPercentage);
+        item.setBaseSellingPrice(baseSellingPrice);
+        item.setAdditionalPrice(additionalPrice);
+        item.setApplicableTaxes(applicableTaxes);
+        item.setDiscountMasterIds(discountMasterIds);
+        item.setBrand(brand);
+        item.setCategoryIds(categoryIds);
+        item.setSupplierId(supplierId);
+        item.setDescription(description);
+        item.setItemStock(itemStock);
+        item.setStockThreshold(stockThreshold);
+        item.setTutorialLinks(tutorialLinks);
+        item.setSkuCode(skuCode);
+        item.setBarcode(barcode);
+        item.setStockUnit(stockUnit);
+        item.setIsReturnable(isReturnable);
+        item.setIsWarrantyAvailable(isWarrantyAvailable);
+        item.setWarrantyPeriod(period);
+        item.setExpiryDate(expiryDate);
+
+        return itemsApiService.addItemToStore(item);
+    }
+
+    @PostMapping("/get-item-by-id")
+    public ApiResponseHandler getItemById(@RequestBody ApiRequestHandler apiRequestHandler){
+        String itemId = apiRequestHandler.getStringValue("itemId");
+        if (StringUtils.isEmpty(itemId))
+            return new ApiResponseHandler("please provide itemId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        return itemsApiService.getItemById(itemId);
+    }
+
+    @PostMapping("get-items-with-filters")
+    public ApiResponseHandler getItemsWithFilters(@RequestBody ApiRequestHandler apiRequestHandler){
+        return null;
+    }
 }

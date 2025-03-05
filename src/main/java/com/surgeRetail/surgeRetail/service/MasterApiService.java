@@ -8,6 +8,7 @@ import com.surgeRetail.surgeRetail.document.master.ItemsCategoryMaster;
 import com.surgeRetail.surgeRetail.document.master.TaxMaster;
 import com.surgeRetail.surgeRetail.document.master.UnitMaster;
 import com.surgeRetail.surgeRetail.repository.MasterApiRepository;
+import com.surgeRetail.surgeRetail.utils.AppUtils;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
@@ -65,12 +66,18 @@ public class MasterApiService {
         List<ItemsCategoryMaster> icmList = masterApiRepository.getAllItemCategoryMaster();
         ArrayNode arrayNode = objectMapper.createArrayNode();
         icmList.forEach(e->{
-            ObjectNode node = objectMapper.createObjectNode();
-            node.put("id", e.getId());
-            node.put("categoryName", e.getCategoryName());
-            node.put("parentCategoryId", e.getParentCategoryId()!=null?e.getParentCategoryId():null);
-            node.put("description", e.getDescription());
-            arrayNode.add(node);
+            try {
+                arrayNode.add(AppUtils.mapObjectToObjectNode(e));
+            } catch (IllegalAccessException ex) {
+                throw new RuntimeException(ex);
+            }
+
+//            ObjectNode node = objectMapper.createObjectNode();
+//            node.put("id", e.getId());
+//            node.put("categoryName", e.getCategoryName());
+//            node.put("parentCategoryId", e.getParentCategoryId()!=null?e.getParentCategoryId():null);
+//            node.put("description", e.getDescription());
+//            arrayNode.add(node);
         });
         return new ApiResponseHandler("All itemCategories", arrayNode, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
     }

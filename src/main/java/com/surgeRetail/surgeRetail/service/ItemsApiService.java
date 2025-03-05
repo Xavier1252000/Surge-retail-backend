@@ -129,4 +129,9 @@ public class ItemsApiService {
 
         return new ApiResponseHandler("images uploaded successfully", item, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
     }
+
+    public ApiResponseHandler getItemById(String itemId) {
+        Item itemById = itemsApiRepository.getItemById(itemId);
+        return new ApiResponseHandler("Item fetched successfully", itemById, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+    }
 }

@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.common.util.StringUtils;
 import lombok.Data;
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 @Data
@@ -269,7 +271,7 @@ public class ApiRequestHandler {
 
 //    14.
     public Map<?, ?> getMapValue(String key){
-        if (data == null && StringUtils.isEmpty(key))
+        if (data == null || StringUtils.isEmpty(key))
             return null;
 
         Object value = data.get(key);
@@ -277,5 +279,21 @@ public class ApiRequestHandler {
             return (Map<?, ?>) value;
 
         return null;
+    }
+
+//    15.
+    public Instant getInstantValue(String key){
+        if (data == null || StringUtils.isEmpty(key))
+            return null;
+
+        Object value = data.get("key");
+        if (value instanceof Instant)
+            return (Instant) value;
+        try {
+            return Instant.parse((String)value);
+        }catch (DateTimeParseException e){
+            System.out.println(e.getMessage());
+            return null;
+        }
     }
 }

@@ -50,7 +50,7 @@ public class OrderApiRepository {
         return mongoTemplate.findOne(query, Invoice.class);
     }
 
-    public void saveInvoice(Invoice invoice) {
-        mongoTemplate.save(invoice);
+    public Invoice saveInvoice(Invoice invoice) {
+        return mongoTemplate.save(invoice);
     }
 }

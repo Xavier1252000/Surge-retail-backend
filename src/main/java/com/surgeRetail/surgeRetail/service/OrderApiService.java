@@ -12,6 +12,7 @@ import com.surgeRetail.surgeRetail.repository.ItemsApiRepository;
 import com.surgeRetail.surgeRetail.repository.MasterApiRepository;
 import com.surgeRetail.surgeRetail.repository.OrderApiRepository;
 import com.surgeRetail.surgeRetail.security.UserDetailsImpl;
+import com.surgeRetail.surgeRetail.utils.AppUtils;
 import com.surgeRetail.surgeRetail.utils.AuthenticatedUserDetails;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
@@ -98,6 +99,8 @@ public class OrderApiService {
 
     public ApiResponseHandler getCart(String id) {
         Cart cart = orderApiRepository.findCartByCustomerId(id);
+        if (cart == null)
+            cart = new Cart();
         ObjectNode node = objectMapper.createObjectNode();
         node.put("cartId", cart.getId());
         node.put("customerId", cart.getCustomerId());
@@ -211,7 +214,6 @@ public class OrderApiService {
     
     public ApiResponseHandler generateInvoice(List<InvoiceItem> invoiceItems, BigDecimal taxOverTotalPrice, BigDecimal discountOverTotalPrice, String customerName, String customerContactNo, String couponCode, String deliveryStatus, String paymentStatus, BigDecimal grandTotal){
         List<String> itemIds = invoiceItems.stream().map(x -> x.getItemId()).toList();
-        List<Item> itemByIds = itemsApiRepository.getItemByIds(itemIds);
         Invoice invoice = new Invoice();
         invoice.setCustomerName(customerName);
         invoice.setCustomerContactNo(customerContactNo);
@@ -237,7 +239,15 @@ public class OrderApiService {
         invoice.setDeliveryStatus(deliveryStatus);
 
         invoice.setGrandTotal(grandTotal);
-        orderApiRepository.saveInvoice(invoice);
-        return null;
+        invoice.onCreate();
+        Invoice savedInvoice = orderApiRepository.saveInvoice(invoice);
+
+        ObjectNode node = objectMapper.createObjectNode();
+        try {
+            node = AppUtils.mapObjectToObjectNode(savedInvoice);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        return new ApiResponseHandler("invoice generated successfully", node, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
     }
 }
