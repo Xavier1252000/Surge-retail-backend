@@ -1,6 +1,7 @@
 package com.surgeRetail.surgeRetail.controller;
 
 import com.surgeRetail.surgeRetail.service.PublicApiService;
+import com.surgeRetail.surgeRetail.utils.requestHandlers.ApiRequestHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
@@ -68,5 +69,26 @@ public class PublicApiController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponseHandler("authentication failed, wrong credentials", null, ResponseStatus.UNAUTHORIZED, ResponseStatusCode.UNAUTHORIZED, true));
 
         return publicApiService.authenticateUser(username, password);
+    }
+
+    @PostMapping("/change-password")
+    public ApiResponseHandler changePassword(@RequestBody ApiRequestHandler apiRequestHandler){
+        String userId = apiRequestHandler.getStringValue("userId");
+        if (StringUtils.isEmpty(userId))
+            return new ApiResponseHandler("please provide userId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        String oldPassword = apiRequestHandler.getStringValue("oldPassword");
+        if (StringUtils.isEmpty(oldPassword))
+            return new ApiResponseHandler("please provide old password", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        String newPassword = apiRequestHandler.getStringValue("newPassword");
+        if (StringUtils.isEmpty(newPassword))
+            return new ApiResponseHandler("please provide new password", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        String newPasswordAgain = apiRequestHandler.getStringValue("newPasswordAgain");
+        if (StringUtils.isEmpty(newPasswordAgain))
+            return new ApiResponseHandler("please re-enter new 0Password", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        return publicApiService.changePassword(userId, oldPassword, newPassword, newPasswordAgain);
     }
 }

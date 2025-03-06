@@ -113,5 +113,3 @@ public class ClientDeskApiController {
         return clientDeskApiService.addStore(clientId, storeName, storeContactNo, registrationNo, gstNo, city, state, country, storeAdminIds, pinCode);
     }
 }
-
-

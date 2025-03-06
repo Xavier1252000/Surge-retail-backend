@@ -133,4 +133,20 @@ public class PublicApiService {
 
         return new ApiResponseHandler("superAdmin registered",responseMap, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
     }
+
+    public ApiResponseHandler changePassword(String userId, String oldPassword, String newPassword, String newPasswordAgain) {
+        if (newPassword.equals(newPasswordAgain))
+            return new ApiResponseHandler("re-entered newPassword is not same as newPassword", null, ResponseStatus.BAD_REQUEST,ResponseStatusCode.BAD_REQUEST, true);
+
+        User userByUserId = publicApiRepository.findUserByUserId(userId);
+        if (userByUserId == null)
+            return new ApiResponseHandler("user not exist by provided id", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        if (!passwordEncoder.matches(oldPassword, userByUserId.getPassword()))
+            return new ApiResponseHandler("incorrect old password", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        userByUserId.setPassword(passwordEncoder.encode(newPassword));
+        publicApiRepository.save(userByUserId);
+        return new ApiResponseHandler("password changed successfully", userByUserId, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+    }
 }
