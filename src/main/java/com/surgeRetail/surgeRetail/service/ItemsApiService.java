@@ -1,20 +1,25 @@
 package com.surgeRetail.surgeRetail.service;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.surgeRetail.surgeRetail.document.Item.Item;
 import com.surgeRetail.surgeRetail.document.Item.ItemImageInfo;
+import com.surgeRetail.surgeRetail.document.Item.Store;
 import com.surgeRetail.surgeRetail.document.master.DiscountMaster;
 import com.surgeRetail.surgeRetail.document.master.TaxMaster;
+import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import com.surgeRetail.surgeRetail.helper.ImageUploadService;
 import com.surgeRetail.surgeRetail.repository.ItemsApiRepository;
 import com.surgeRetail.surgeRetail.repository.MasterApiRepository;
+import com.surgeRetail.surgeRetail.utils.AppUtils;
+import com.surgeRetail.surgeRetail.utils.AuthenticatedUserDetails;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -128,6 +133,27 @@ public class ItemsApiService {
         itemsApiRepository.saveItem(item);
 
         return new ApiResponseHandler("images uploaded successfully", item, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
+    }
+
+    public ApiResponseHandler findLowStockItemsInStore(String storeId) {
+
+        if (AuthenticatedUserDetails.getUserDetails().getAuthorities().contains(User.USER_ROLE_STORE_ADMIN)) {
+            Store store = AuthenticatedUserDetails.getUserDetails().getStores().get(0);
+            storeId = store.getId();
+        }
+        if (StringUtils.isEmpty(storeId))
+            return new ApiResponseHandler("please provide storeId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        List<Item> lowStockItems = itemsApiRepository.findLowStockItemsInStore(storeId);
+
+        ObjectNode node;
+        try {
+            node = AppUtils.mapObjectToObjectNode(lowStockItems);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+
+        return new ApiResponseHandler("stock low", node, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
     }
 
     public ApiResponseHandler getItemById(String itemId) {

@@ -42,4 +42,13 @@ public class ItemsApiRepository {
     public ItemImageInfo saveItemImageInfo(ItemImageInfo itemImageInfo) {
         return mongoTemplate.save(itemImageInfo);
     }
+
+    public List<Item> findLowStockItemsInStore(String storeId) {
+        Query query = new Query();
+        Criteria criteria = new Criteria();
+        Criteria storeCriteria = Criteria.where("storeId").is(storeId);
+        Criteria thresholdStockCriteria = Criteria.where("itemStock").lt("stockThreshold");
+        criteria.andOperator(storeCriteria, thresholdStockCriteria);
+        return mongoTemplate.find(query.addCriteria(criteria), Item.class);
+    }
 }

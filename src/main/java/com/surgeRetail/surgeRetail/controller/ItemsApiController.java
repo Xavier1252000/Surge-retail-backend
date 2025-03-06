@@ -333,6 +333,12 @@ public class ItemsApiController {
         return itemsApiService.getItemById(itemId);
     }
 
+    @PostMapping("/find-low-stock-items")
+    public ApiResponseHandler findLowStockItems(@RequestBody ApiRequestHandler apiRequestHandler){
+        String storeId = apiRequestHandler.getStringValue("storeId");
+        return itemsApiService.findLowStockItemsInStore(storeId);
+    }
+
     @PostMapping("get-items-with-filters")
     public ApiResponseHandler getItemsWithFilters(@RequestBody ApiRequestHandler apiRequestHandler){
         return null;
