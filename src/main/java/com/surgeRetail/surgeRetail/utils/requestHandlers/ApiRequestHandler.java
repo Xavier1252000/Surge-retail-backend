@@ -28,7 +28,6 @@ public class ApiRequestHandler {
 //    2.
     public <T> T getGenericObjectValue(String key, Class<T> clazz){
         if (StringUtils.isEmpty(key) || data == null){
-            System.out.println("getObjectValue, either key is empty or object value is null");
             return null;
         }
         Object value = data.get(key);
@@ -102,7 +101,6 @@ public class ApiRequestHandler {
 //    6.
     public Double getDoubleValue(String key){
         if (data == null || StringUtils.isEmpty(key)){
-            System.out.println("getDoubleValue, either requestBody or method param is empty or null");
             return null;
         }
         Object value = data.get(key);
@@ -123,7 +121,6 @@ public class ApiRequestHandler {
 //    7.
     public Integer getIntegerValue(String key){
         if (data == null || StringUtils.isEmpty(key)){
-            System.out.println("getIntValue, requestBody with provided field is empty or null");
             return null;
         }
         Object value = data.get(key);

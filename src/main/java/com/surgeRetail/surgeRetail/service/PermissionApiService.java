@@ -129,10 +129,9 @@ public class PermissionApiService {
         ObjectNode headNode = objectMapper.createObjectNode();
         ArrayNode arrayNode = objectMapper.createArrayNode();
         UserPermissions userPermissions = permissionApiRepository.getUserPermissionsByUserId(userId);
-        System.out.println(userPermissions);
         if (userPermissions == null) {
             headNode.put("userId", userId);
-            headNode.set("permissions", arrayNode);
+            headNode.set("userPermissions", arrayNode);
             return new ApiResponseHandler("User have no permissions", headNode, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, true);
         }
 

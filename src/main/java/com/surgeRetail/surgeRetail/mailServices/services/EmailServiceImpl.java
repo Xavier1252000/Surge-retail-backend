@@ -110,8 +110,10 @@ public class EmailServiceImpl implements EmailService{
             }
 
             javaMailSender.send(mimeMessage);
+            System.out.println("mail sent----------------------------------->");
             return "Mail sent successfully with image attachment!";
         } catch (Exception e) {
+            System.out.println("error in mail sent---------------------->");
             return "Error while sending mail: " + e.getMessage();
         }
     }

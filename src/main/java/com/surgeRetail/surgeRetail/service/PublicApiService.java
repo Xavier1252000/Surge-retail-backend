@@ -59,12 +59,19 @@ public class PublicApiService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponseHandler("authentication failed, user not found", null, ResponseStatus.UNAUTHORIZED, ResponseStatusCode.UNAUTHORIZED, true));
         Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
 
-        String response = emailService.sendEmailWithImage(
-                "ns1252000@gmail.com",
-                "Subject: Test Email with Image",
-                "Please find the attached image.",
-                "/home/nikhil-shukla/Downloads/Resume Nikhil-.pdf"
-        );
+        Thread t1 = new Thread(() -> {
+            try {
+                emailService.sendEmailWithImage(
+                        "ns1252000@gmail.com",
+                        "Subject: Test Email with Image",
+                        "Please find the attached image.",
+                        "/home/nikhil-shukla/Downloads/Resume Nikhil-.pdf"
+                );
+            } catch (MessagingException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        t1.start();
 
         String tokenString = jwtService.generateToken(username);
         JwtToken token = new JwtToken();
@@ -72,17 +79,6 @@ public class PublicApiService {
         token.setUser(user);
         token.setExpirationDate(jwtService.extractExpiration(tokenString));
         token.setCreationDate(new Date());
-
-        EmailDetails emailDetails = new EmailDetails();
-        emailDetails.setSubject("new login");
-        emailDetails.setRecipient(user.getEmailId());
-        emailDetails.setMailBody("new login from the anonymous system");
-        emailDetails.setCreatedAt(Instant.now());
-        try {
-            emailService.sendEmailWithAttachment(emailDetails);
-        }catch (Exception e){
-            System.out.println(e);
-        }
 
 
         return ResponseEntity.ok(new ApiResponseHandler("authentication successful", token, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false));
