@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.surgeRetail.surgeRetail.document.master.RoleMaster;
-import com.surgeRetail.surgeRetail.document.userAndRoles.ClientSecret;
 import com.surgeRetail.surgeRetail.document.userAndRoles.SuperAdminInfo;
 import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import com.surgeRetail.surgeRetail.repository.ConfidentialApiRepository;
@@ -119,12 +118,6 @@ public class ConfidentialApiService {
         user.setActive(true);
 
         publicApiRepository.save(user);
-
-        ClientSecret cs = new ClientSecret();
-        cs.setClientSecret(passwordEncoder.encode(clientSecret));
-        cs.setUserId(user.getId());
-        cs.onCreate();
-        confidentialApiRepository.saveClientSecret(cs);
 
         ObjectNode node = objectMapper.createObjectNode();
         node.put("id",user.getId());

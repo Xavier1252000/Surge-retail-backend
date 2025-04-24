@@ -4,7 +4,6 @@ package com.surgeRetail.surgeRetail.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.surgeRetail.surgeRetail.document.Item.Store;
-import com.surgeRetail.surgeRetail.document.userAndRoles.ClientSecret;
 import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import com.surgeRetail.surgeRetail.repository.ClientDeskApiRepository;
 import com.surgeRetail.surgeRetail.repository.ConfidentialApiRepository;
@@ -54,14 +53,6 @@ public class ClientDeskApiService {
         customUser.setActive(true);
 
         publicApiRepository.save(customUser);
-
-        if (roles.contains(User.USER_ROLE_CLIENT)){
-            ClientSecret cs = new ClientSecret();
-            cs.setUserId(customUser.getId());
-            cs.setClientSecret(clientSecret);
-            cs.onCreate();
-            confidentialApiRepository.saveClientSecret(cs);
-        }
 
         ObjectNode node = objectMapper.createObjectNode();
         node.put("firstName", customUser.getFirstName());

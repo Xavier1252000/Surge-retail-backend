@@ -1,7 +1,6 @@
 package com.surgeRetail.surgeRetail.repository;
 
 import com.surgeRetail.surgeRetail.document.master.RoleMaster;
-import com.surgeRetail.surgeRetail.document.userAndRoles.ClientSecret;
 import com.surgeRetail.surgeRetail.document.Item.Store;
 import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import org.springframework.data.domain.PageRequest;
@@ -23,10 +22,6 @@ public class ConfidentialApiRepository {
 
     public ConfidentialApiRepository(MongoTemplate mongoTemplate){
         this.mongoTemplate = mongoTemplate;
-    }
-
-    public void saveClientSecret(ClientSecret cs) {
-        mongoTemplate.save(cs);
     }
 
     public List<Store> findAllStores() {
@@ -57,7 +52,7 @@ public class ConfidentialApiRepository {
         if (!CollectionUtils.isEmpty(roles)){
             criteria = criteria.and("roles").in(roles);
         }
-        if (!CollectionUtils.isEmpty(roles)){
+        if (active != null){
             criteria = criteria.and("active").is(active);
         }
 

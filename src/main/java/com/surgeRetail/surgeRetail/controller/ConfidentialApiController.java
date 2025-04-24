@@ -196,10 +196,11 @@ public class ConfidentialApiController {
         Instant fromDate = apiRequestHandler.getInstantValue("fromDate");
         Instant toDate = apiRequestHandler.getInstantValue("toDate");
 
-        if (apiRequestHandler.getStringValue("fromDate") !=null && !apiRequestHandler.getStringValue("fromDate").isEmpty() && fromDate == null)
+        String rawFromDate = apiRequestHandler.getStringValue("fromDate");
+        if (rawFromDate != null && fromDate == null)
             return  new ResponseEntity<>(new ApiResponseHandler("please provide fromDate in yyyy-MM-ddTHH:MM:SS.nnnZ format", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
-        if (apiRequestHandler.getStringValue("toDate") != null && !apiRequestHandler.getStringValue("fromDate").isEmpty() && fromDate == null)
+        if (apiRequestHandler.getStringValue("toDate") != null && fromDate == null)
             return  new ResponseEntity<>(new ApiResponseHandler("please provide toDate in yyyy-MM-ddTHH:MM:SS.nnnZ", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         ApiResponseHandler allUsers = confidentialApiService.getAllUsers(index, itemPerIndex, userIds, roles, active, fromDate, toDate);

@@ -50,7 +50,13 @@ public class ApiRequestHandler {
     public String getStringValue(String key){
         if (StringUtils.isEmpty(key))
             return null;
-        return String.valueOf(data.get(key));
+
+        if (data.get(key) == null)
+            return null;
+        String strValue = String.valueOf(data.get(key));
+        if (strValue.equalsIgnoreCase("null"))
+            return null;
+        return strValue;
     }
 
 //    4.
