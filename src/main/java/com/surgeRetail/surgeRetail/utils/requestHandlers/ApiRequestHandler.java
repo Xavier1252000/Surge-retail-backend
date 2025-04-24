@@ -282,11 +282,13 @@ public class ApiRequestHandler {
         if (data == null || StringUtils.isEmpty(key))
             return null;
 
-        Object value = data.get("key");
-        if (value instanceof Instant)
-            return (Instant) value;
+        String value = getStringValue(key);
+
+        if (StringUtils.isEmpty(value)){
+            return null;
+        }
         try {
-            return Instant.parse((String)value);
+            return Instant.parse(value);
         }catch (DateTimeParseException e){
             System.out.println(e.getMessage());
             return null;

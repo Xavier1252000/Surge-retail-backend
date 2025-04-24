@@ -2,6 +2,7 @@ package com.surgeRetail.surgeRetail.service;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.surgeRetail.surgeRetail.document.master.RoleMaster;
 import com.surgeRetail.surgeRetail.document.userAndRoles.ClientSecret;
@@ -9,6 +10,7 @@ import com.surgeRetail.surgeRetail.document.userAndRoles.SuperAdminInfo;
 import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import com.surgeRetail.surgeRetail.repository.ConfidentialApiRepository;
 import com.surgeRetail.surgeRetail.repository.PublicApiRepository;
+import com.surgeRetail.surgeRetail.utils.AppUtils;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -191,5 +194,20 @@ public class ConfidentialApiService {
         roleMaster.setDescription(description);
         RoleMaster savedRole = confidentialApiRepository.saveRoleMaster(roleMaster);
         return new ApiResponseHandler("role created", savedRole, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
+    }
+
+    public ApiResponseHandler getAllUsers(Integer index, Integer itemPerIndex, List<String> userIds, List<String> roles, Boolean active, Instant fromDate, Instant toDate) {
+        List<User> allUsers = confidentialApiRepository.getAllUsers(index, itemPerIndex, userIds, roles, active, fromDate, toDate);
+        ArrayNode arrayNode = objectMapper.createArrayNode();
+        allUsers.forEach(e->{
+            try {
+                ObjectNode node = AppUtils.mapObjectToObjectNode(e);
+                arrayNode.add(node);
+            } catch (IllegalAccessException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
+        return new ApiResponseHandler("All Users", arrayNode, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
     }
 }

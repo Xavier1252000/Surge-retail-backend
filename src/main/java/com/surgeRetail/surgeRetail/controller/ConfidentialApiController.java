@@ -7,11 +7,15 @@ import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
 import io.micrometer.common.util.StringUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -177,4 +181,29 @@ public class ConfidentialApiController {
         }
         return confidentialApiService.registerUserWithCustomRoles(firstName, lastName, emailId, mobileNo, username, password,superAdminSecret, clientSecret);
     }
+
+    @PostMapping("/get-all-users")
+    public ResponseEntity<ApiResponseHandler> getAllUsers(@RequestBody ApiRequestHandler apiRequestHandler){
+        List<String> userIds = apiRequestHandler.getListValue("userIds", String.class);
+
+        Integer index = apiRequestHandler.getIntegerValue("index");
+        Integer itemPerIndex = apiRequestHandler.getIntegerValue("itemPerIndex");
+
+        Boolean active = apiRequestHandler.getBooleanValue("active");
+
+        List<String> roles = apiRequestHandler.getListValue("roles", String.class);
+
+        Instant fromDate = apiRequestHandler.getInstantValue("fromDate");
+        Instant toDate = apiRequestHandler.getInstantValue("toDate");
+
+        if (apiRequestHandler.getStringValue("fromDate") !=null && !apiRequestHandler.getStringValue("fromDate").isEmpty() && fromDate == null)
+            return  new ResponseEntity<>(new ApiResponseHandler("please provide fromDate in yyyy-MM-ddTHH:MM:SS.nnnZ format", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+
+        if (apiRequestHandler.getStringValue("toDate") != null && !apiRequestHandler.getStringValue("fromDate").isEmpty() && fromDate == null)
+            return  new ResponseEntity<>(new ApiResponseHandler("please provide toDate in yyyy-MM-ddTHH:MM:SS.nnnZ", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+
+        ApiResponseHandler allUsers = confidentialApiService.getAllUsers(index, itemPerIndex, userIds, roles, active, fromDate, toDate);
+        return ResponseEntity.ok(allUsers);
+    }
 }
+
