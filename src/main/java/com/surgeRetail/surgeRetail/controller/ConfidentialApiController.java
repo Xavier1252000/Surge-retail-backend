@@ -73,37 +73,73 @@ public class ConfidentialApiController {
 
 
     @PostMapping("/register-client")
-    public ApiResponseHandler registerClient(@RequestBody ApiRequestHandler apiRequestHandler){
+    public ResponseEntity<ApiResponseHandler> registerClient(@RequestBody ApiRequestHandler apiRequestHandler){
         String firstName = apiRequestHandler.getStringValue("firstName");
         if (StringUtils.isEmpty(firstName))
-            return new ApiResponseHandler("please provide firstName", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide firstName", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         String lastName = apiRequestHandler.getStringValue("lastName");
         if (StringUtils.isEmpty(lastName))
-            return new ApiResponseHandler("please provide lastName", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide lastName", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         String emailId = apiRequestHandler.getStringValue("emailId");
         if (StringUtils.isEmpty(emailId))
-            return new ApiResponseHandler("please provide emailId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide emailId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         String mobileNo = apiRequestHandler.getStringValue("mobileNo");
         if (StringUtils.isEmpty(mobileNo))
-            return new ApiResponseHandler("please provide mobileNo", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide mobileNo", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         String password = apiRequestHandler.getStringValue("password");
         if (StringUtils.isEmpty(password))
-            return new ApiResponseHandler("please provide password", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide password", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         String username = apiRequestHandler.getStringValue("username");
         if (StringUtils.isEmpty(username))
-            return new ApiResponseHandler("please provide username", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide username", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
-        String clientSecret = apiRequestHandler.getStringValue("clientSecret");
-        if (StringUtils.isEmpty(clientSecret))
-            return new ApiResponseHandler("please provide clientSecret", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-
-        return confidentialApiService.registerClient(firstName, lastName, emailId, mobileNo, username, password, clientSecret);
+        return new ResponseEntity<>(confidentialApiService.registerClient(firstName, lastName, emailId, mobileNo, username, password), HttpStatus.CREATED);
     }
+
+    @PostMapping("/add-client-details")
+    public ResponseEntity<ApiResponseHandler> addClientDetails(@RequestBody ApiRequestHandler apiRequestHandler){
+        String userId = apiRequestHandler.getStringValue("userId");
+        if (StringUtils.isEmpty(userId))
+            return new ResponseEntity<>(new ApiResponseHandler("please provide userId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+
+        String displayName = apiRequestHandler.getStringValue("displayName");
+
+        String secondaryEmail = apiRequestHandler.getStringValue("secondaryEmail");
+
+        String alternateContactNo = apiRequestHandler.getStringValue("alternateContactNo");
+
+        String languagePreference = apiRequestHandler.getStringValue("languagePreference");
+
+        String timeZone = apiRequestHandler.getStringValue("timeZone");
+
+        String businessRegistrationNo = apiRequestHandler.getStringValue("businessRegistrationNo");
+
+        String businessType = apiRequestHandler.getStringValue("businessType");
+
+        String country = apiRequestHandler.getStringValue("country");
+
+        String state = apiRequestHandler.getStringValue("state");
+
+        String city = apiRequestHandler.getStringValue("city");
+
+        String postalCode = apiRequestHandler.getStringValue("postalCode");
+
+        String address = apiRequestHandler.getStringValue("address");
+
+        ApiResponseHandler apiResponseHandler = confidentialApiService.addClientDetails(userId, displayName, secondaryEmail, alternateContactNo, languagePreference, timeZone, businessRegistrationNo, businessType,
+                country, state, city, postalCode, address);
+        if (apiResponseHandler.getStatusCode() != 201)
+            return new ResponseEntity<>(apiResponseHandler, HttpStatus.BAD_REQUEST);
+
+        return new ResponseEntity<>(apiResponseHandler, HttpStatus.CREATED);
+    }
+
+
 
     @PostMapping("/register-super-user")
     public ApiResponseHandler registerFirstSuperUser(@RequestBody Map<String, Object> requestMap){

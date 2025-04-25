@@ -15,15 +15,12 @@ public class ClientDetails extends Auditable {
     private String displayName;
     private String secondaryEmail;
     private String alternateContactNo;
-    private String clientSecret;
-    private boolean subscriptionStatus;
+    private boolean subscriptionStatus;   //by default false
     private SubscriptionDetails currentSubscriptionDetails;
     private String logoUrl;
     private String languagePreference;
     private String timeZone;
-    private String currencyCode;
-    private String companyRegistrationNo;
-    private String taxId;
+    private String businessRegistrationNo;
     private String businessType;
     private String country;
     private String state;

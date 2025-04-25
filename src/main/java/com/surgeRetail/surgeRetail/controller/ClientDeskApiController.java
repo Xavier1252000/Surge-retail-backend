@@ -103,13 +103,14 @@ public class ClientDeskApiController {
             return new ApiResponseHandler("please provide store contactNo", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
         String registrationNo = apiRequestHandler.getStringValue("registrationNo");
-        String gstNo = apiRequestHandler.getStringValue("gstNo");
+        String taxIdentificationId = apiRequestHandler.getStringValue("taxIdentificationId");
+        String taxIdentificationNo = apiRequestHandler.getStringValue("taxIdentificationNo");
         String city = apiRequestHandler.getStringValue("city");
         String state = apiRequestHandler.getStringValue("state");
         String country = apiRequestHandler.getStringValue("country");
         String pinCode = apiRequestHandler.getStringValue("pinCode");
         Set<String> storeAdminIds = apiRequestHandler.getSetValue("storeAdminIds", String.class);
 
-        return clientDeskApiService.addStore(clientId, storeName, storeContactNo, registrationNo, gstNo, city, state, country, storeAdminIds, pinCode);
+        return clientDeskApiService.addStore(clientId, storeName, storeContactNo, registrationNo, taxIdentificationId, taxIdentificationNo, city, state, country, storeAdminIds, pinCode);
     }
 }

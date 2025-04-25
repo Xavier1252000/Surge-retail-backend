@@ -1,7 +1,8 @@
 package com.surgeRetail.surgeRetail.repository;
 
 import com.surgeRetail.surgeRetail.document.master.RoleMaster;
-import com.surgeRetail.surgeRetail.document.Item.Store;
+import com.surgeRetail.surgeRetail.document.store.Store;
+import com.surgeRetail.surgeRetail.document.userAndRoles.ClientDetails;
 import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -67,5 +68,16 @@ public class ConfidentialApiRepository {
 
         query.addCriteria(criteria);
         return mongoTemplate.find(query, User.class);
+    }
+
+    public ClientDetails saveClientDetails(ClientDetails cd) {
+        return mongoTemplate.save(cd);
+    }
+
+    public User findUserRegAsClientByUserId(String userId) {
+        Query query = new Query();
+        Criteria criteria = Criteria.where("id").is(userId).and("roles").in(User.USER_ROLE_CLIENT);
+        query.addCriteria(criteria);
+        return mongoTemplate.findOne(query, User.class);
     }
 }

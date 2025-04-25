@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.surgeRetail.surgeRetail.document.master.RoleMaster;
+import com.surgeRetail.surgeRetail.document.userAndRoles.ClientDetails;
 import com.surgeRetail.surgeRetail.document.userAndRoles.SuperAdminInfo;
 import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import com.surgeRetail.surgeRetail.repository.ConfidentialApiRepository;
@@ -86,7 +87,7 @@ public class ConfidentialApiService {
         return new ApiResponseHandler("user registered successfully with id: "+user.getId(), node, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
     }
 
-    public ApiResponseHandler registerClient(String firstName, String lastName, String emailId, String mobileNo, String username, String password, String clientSecret) {
+    public ApiResponseHandler registerClient(String firstName, String lastName, String emailId, String mobileNo, String username, String password) {
 
         if (publicApiRepository.userExistByUsername(username))
             return new ApiResponseHandler("client already exists with provided username", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
@@ -98,12 +99,7 @@ public class ConfidentialApiService {
             return new ApiResponseHandler("client already registered with provided mobileNo", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
         Set<String> role = new HashSet<>();  //  assigning user role by default
-        role.add(User.USER_ROLE_USER);
         role.add(User.USER_ROLE_CLIENT);
-        role.add(User.USER_ROLE_CASHIER);
-        role.add(User.USER_ROLE_MANAGEMENT);
-        role.add(User.USER_ROLE_STORE_ADMIN);
-
 
         User user = new User();
         user.setFirstName(firstName);
@@ -202,5 +198,38 @@ public class ConfidentialApiService {
         });
 
         return new ApiResponseHandler("All Users", arrayNode, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
+    }
+
+    public ApiResponseHandler addClientDetails(String userId, String displayName, String secondaryEmail, String alternateContactNo, String languagePreference, String timeZone, String businessRegistrationNo, String businessType, String country, String state, String city, String postalCode, String address) {
+        User client = confidentialApiRepository.findUserRegAsClientByUserId(userId);
+        if (client == null)
+            return new ApiResponseHandler("no client registered with providedId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        ClientDetails cd = new ClientDetails();
+        cd.setUserId(userId);
+        cd.setDisplayName(displayName);
+        cd.setSecondaryEmail(secondaryEmail);
+        cd.setAlternateContactNo(alternateContactNo);
+        cd.setLanguagePreference(languagePreference);
+        cd.setTimeZone(timeZone);
+        cd.setBusinessRegistrationNo(businessRegistrationNo);
+        cd.setBusinessType(businessType);
+        cd.setCountry(country);
+        cd.setState(state);
+        cd.setCity(city);
+        cd.setPostalCode(postalCode);
+        cd.setAddress(address);
+
+        cd.setSubscriptionStatus(false);
+        cd.setCurrentSubscriptionDetails(null);
+
+        ClientDetails clientDetails = confidentialApiRepository.saveClientDetails(cd);
+        ObjectNode node = objectMapper.createObjectNode();
+        try {
+            node = AppUtils.mapObjectToObjectNode(clientDetails);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+
+        return new ApiResponseHandler("client details saved successfully", node, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
     }
 }

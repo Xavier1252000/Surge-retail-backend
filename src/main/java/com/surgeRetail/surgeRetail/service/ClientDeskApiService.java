@@ -3,7 +3,7 @@ package com.surgeRetail.surgeRetail.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.surgeRetail.surgeRetail.document.Item.Store;
+import com.surgeRetail.surgeRetail.document.store.Store;
 import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import com.surgeRetail.surgeRetail.repository.ClientDeskApiRepository;
 import com.surgeRetail.surgeRetail.repository.ConfidentialApiRepository;
@@ -71,7 +71,7 @@ public class ClientDeskApiService {
     }
 
 
-    public ApiResponseHandler addStore(String clientId, String storeName, String storeContactNo, String registrationNo, String gstNo, String city, String state, String country, Set<String> storeAdminIds, String pinCode) {
+    public ApiResponseHandler addStore(String clientId, String storeName, String storeContactNo, String registrationNo, String taxIdentificationId, String taxIdentificationNo, String city, String state, String country, Set<String> storeAdminIds, String pinCode) {
 
 //      in case clientId is externally provided by super-admin, not taken from SecurityContextHolder when client is creating store
         User client = publicApiRepository.findUserByUserId(clientId);
@@ -81,11 +81,12 @@ public class ClientDeskApiService {
         Store store = new Store();
         store.setClientId(clientId);
         store.setStoreName(storeName);
-        store.setStoreContactNo(storeContactNo);
+        store.setContactNo(storeContactNo);
         store.setRegistrationNo(registrationNo);
-        store.setGstNo(gstNo);
+        store.setTaxIdentificationId(taxIdentificationId);
+        store.setTaxIdentificationNo(taxIdentificationNo);
         store.setCity(city);
-        store.setPinCode(pinCode);
+        store.setPostalCode(pinCode);
         store.setState(state);
         store.setCountry(country);
         store.setStoreAdminIds(storeAdminIds);
@@ -95,10 +96,10 @@ public class ClientDeskApiService {
         ObjectNode node  = objectMapper.createObjectNode();
         node.put("id", savedStore.getId());
         node.put("storeName", savedStore.getStoreName());
-        node.put("storeContactNo", savedStore.getStoreContactNo());
+        node.put("storeContactNo", savedStore.getContactNo());
         node.put("registrationNo", savedStore.getRegistrationNo());
-        node.put("gstNo", savedStore.getGstNo());
-        node.put("pinCode", store.getPinCode());
+        node.put("gstNo", savedStore.getTaxIdentificationNo());
+        node.put("pinCode", store.getPostalCode());
         node.put("city", savedStore.getCity());
         node.put("state", savedStore.getState());
         node.put("country", savedStore.getCountry());

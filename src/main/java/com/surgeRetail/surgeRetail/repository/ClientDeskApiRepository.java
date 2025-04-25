@@ -1,6 +1,6 @@
 package com.surgeRetail.surgeRetail.repository;
 
-import com.surgeRetail.surgeRetail.document.Item.Store;
+import com.surgeRetail.surgeRetail.document.store.Store;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Repository;
 

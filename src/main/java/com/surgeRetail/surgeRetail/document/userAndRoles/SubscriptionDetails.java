@@ -13,6 +13,7 @@ public class SubscriptionDetails {
     private String id;
     private String clientId;
     private String plan;
+    private Integer storeLimit;   //initially 0, for un subscribed user
     private int totalAmount;
     private String currencyCode;
     private Instant subscriptionFrom;

@@ -1,6 +1,6 @@
 package com.surgeRetail.surgeRetail.security.service;
 
-import com.surgeRetail.surgeRetail.document.Item.Store;
+import com.surgeRetail.surgeRetail.document.store.Store;
 import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import com.surgeRetail.surgeRetail.repository.ConfidentialApiRepository;
 import com.surgeRetail.surgeRetail.repository.PublicApiRepository;

@@ -22,4 +22,8 @@ public class ApiResponseHandler {
         response.put("error", error);
 
     }
+
+    public int getStatusCode(){
+        return Integer.parseInt(String.valueOf(response.get("statusCode")));
+    }
 }

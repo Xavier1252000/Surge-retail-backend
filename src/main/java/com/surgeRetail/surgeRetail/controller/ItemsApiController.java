@@ -10,7 +10,9 @@ import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
 import io.micrometer.common.util.StringUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -208,10 +210,10 @@ public class ItemsApiController {
     }
 
     @PostMapping("/update-item")
-    public ApiResponseHandler updateItem(@RequestBody ApiRequestHandler apiRequestHandler){
+    public ResponseEntity<ApiResponseHandler> updateItem(@RequestBody ApiRequestHandler apiRequestHandler){
         String itemId = apiRequestHandler.getStringValue("itemId");
         if (StringUtils.isEmpty(itemId))
-            return new ApiResponseHandler("please provide itemId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide itemId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
         String storeId = null;
 
         // if item is registered by storeAdmin, no need to manually provide storeId
@@ -226,39 +228,39 @@ public class ItemsApiController {
             storeId = apiRequestHandler.getStringValue("storeId");
 
         if (StringUtils.isEmpty(storeId))
-            return new ApiResponseHandler("please provide storeId",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide storeId",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         String itemName = apiRequestHandler.getStringValue("itemName");
         if (StringUtils.isEmpty(itemName))
-            return new ApiResponseHandler("please provide itemName",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide itemName",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         BigDecimal costPrice = apiRequestHandler.getBigDecimalValue("costPrice");
         if(costPrice == null || costPrice.compareTo(BigDecimal.ZERO)<=0)
-            return new ApiResponseHandler("please provide valid costPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide valid costPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         BigDecimal profitToGainInPercentage = apiRequestHandler.getBigDecimalValue("profitToGainInPercentage");
 
         BigDecimal baseSellingPrice = apiRequestHandler.getBigDecimalValue("baseSellingPrice");
 
         if (profitToGainInPercentage != null && baseSellingPrice != null || profitToGainInPercentage == null && baseSellingPrice == null)      // checking both baseSellingPrice and profitToGainInPercentage should not be present
-            return new ApiResponseHandler("please provide any one profitToGainInPercentage or baseSellingPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide any one profitToGainInPercentage or baseSellingPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         if (profitToGainInPercentage != null && profitToGainInPercentage.compareTo(BigDecimal.ZERO) < 0){
-            return new ApiResponseHandler("please provide valid values in profitToGainInPercentage", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide valid values in profitToGainInPercentage", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
         }
 
         if (baseSellingPrice != null && baseSellingPrice.compareTo(BigDecimal.ZERO) < 0){
-            return new ApiResponseHandler("please provide valid values in baseSellingPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide valid values in baseSellingPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
         }
 
 
         BigDecimal additionalPrice = apiRequestHandler.getBigDecimalValue("additionalPrice");
         if (additionalPrice != null && additionalPrice.compareTo(BigDecimal.ZERO) < 0)
-            return new ApiResponseHandler("additionalPrice can't be less than zero", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("additionalPrice can't be less than zero", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         String stockUnit = apiRequestHandler.getStringValue("stockUnit");
         if (StringUtils.isEmpty(stockUnit))
-            return new ApiResponseHandler("please provide stockUnit",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide stockUnit",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         Set<String> applicableTaxes = apiRequestHandler.getSetValue("applicableTaxes", String.class);
 
@@ -274,11 +276,11 @@ public class ItemsApiController {
 
         Float itemStock = apiRequestHandler.getFloatValue("itemStock");
         if (itemStock == null || itemStock < 0)
-            return new ApiResponseHandler("itemStock can't be negative", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("itemStock can't be negative", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         Float stockThreshold =  apiRequestHandler.getFloatValue("stockThreshold");
         if (stockThreshold == null || stockThreshold < 0)
-            return new ApiResponseHandler("please provide valid values in stockThreshold can be integer or decimal", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide valid values in stockThreshold can be integer or decimal", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         Set<String> tutorialLinks = apiRequestHandler.getSetValue("tutorialLinks", String.class);
 
@@ -320,7 +322,10 @@ public class ItemsApiController {
         item.setWarrantyPeriod(period);
         item.setExpiryDate(expiryDate);
 
-        return itemsApiService.addItemToStore(item);
+        ApiResponseHandler addItemResponse = itemsApiService.addItemToStore(item);
+        if (addItemResponse.getStatusCode() != 201)
+            return new ResponseEntity<>(addItemResponse, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(addItemResponse, HttpStatus.CREATED);
     }
 
     @PostMapping("/get-item-by-id")

@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -19,4 +20,6 @@ public class Modules extends Auditable {
     private short serialNo;
     private String  icon;
     private String parentId;
+    private Set<String> canBeAssignedTo;
+    private Set<String> canBeAssignedBy;
 }
