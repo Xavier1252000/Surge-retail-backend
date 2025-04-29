@@ -2,6 +2,7 @@ package com.surgeRetail.surgeRetail.repository;
 
 import com.surgeRetail.surgeRetail.document.Item.Item;
 import com.surgeRetail.surgeRetail.document.Item.ItemImageInfo;
+import com.surgeRetail.surgeRetail.document.store.Store;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -50,5 +51,9 @@ public class ItemsApiRepository {
         Criteria thresholdStockCriteria = Criteria.where("itemStock").lt("stockThreshold");
         criteria.andOperator(storeCriteria, thresholdStockCriteria);
         return mongoTemplate.find(query.addCriteria(criteria), Item.class);
+    }
+
+    public boolean isStoreExistsById(String storeId) {
+        return mongoTemplate.exists(new Query(Criteria.where("id").is(storeId)), Store.class);
     }
 }

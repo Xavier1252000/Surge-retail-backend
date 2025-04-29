@@ -3,16 +3,14 @@ package com.surgeRetail.surgeRetail.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.surgeRetail.surgeRetail.document.master.DiscountMaster;
-import com.surgeRetail.surgeRetail.document.master.ItemsCategoryMaster;
-import com.surgeRetail.surgeRetail.document.master.TaxMaster;
-import com.surgeRetail.surgeRetail.document.master.UnitMaster;
+import com.surgeRetail.surgeRetail.document.master.*;
 import com.surgeRetail.surgeRetail.repository.MasterApiRepository;
 import com.surgeRetail.surgeRetail.utils.AppUtils;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -163,5 +161,55 @@ public class MasterApiService {
         unitMaster.setUnit(unit);
         unitMaster.setUnitNotation(unitNotation);
         return new ApiResponseHandler("now you can add item with measurement in: "+unit, masterApiRepository.saveUnitMaster(unitMaster), ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
+    }
+
+    @Transactional
+    public ApiResponseHandler addCountryMaster(String name, String currency, String code, String symbol, String callingCode, List<TimezoneMaster> timezones) {
+
+        CountryMaster countryMaster = new CountryMaster(name, currency, code, symbol, callingCode );
+        CountryMaster savedCountryMaster = masterApiRepository.saveCountryMaster(countryMaster);
+        ArrayNode arrayNode = objectMapper.createArrayNode();
+        timezones.forEach(e->{
+            e.setCountryId(savedCountryMaster.getId());
+            TimezoneMaster savedTZM = masterApiRepository.saveTimezones(e);
+            arrayNode.add(objectMapper.valueToTree(savedTZM));
+        });
+        ObjectNode rootNode = objectMapper.valueToTree(savedCountryMaster);
+        rootNode.set("timeZones", arrayNode);
+
+        return new ApiResponseHandler("successfull", rootNode, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
+    }
+
+    public ApiResponseHandler addTimeZoneMaster(String name, String offSet, String countryId, String dtsSupported) {
+        return null;
+    }
+
+    public ApiResponseHandler getAllCountryMaters() {
+        List<CountryMaster> allCountryMasters = masterApiRepository.getAllCountryMasters();
+        List<String> countryMasterIds = allCountryMasters.stream().map(CountryMaster::getId).toList();
+        List<TimezoneMaster> allTimezoneMaster = masterApiRepository.getAllTimezoneMaster();
+        ArrayNode root = objectMapper.createArrayNode();
+
+        allCountryMasters.forEach(e->{
+            ArrayNode timeZone = objectMapper.createArrayNode();
+            List<TimezoneMaster> timeZones = allTimezoneMaster.stream().filter(x -> x.getCountryId().equals(e.getId())).toList();
+            ObjectNode node = objectMapper.valueToTree(e);
+            node.set("timeZones", objectMapper.valueToTree(timeZones));
+            root.add(node);
+        });
+        return new ApiResponseHandler("countryMaster fetched successfully", root, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
+    }
+
+    public ApiResponseHandler createRole(String roleName, String roleTypee) {
+        Roles role = new Roles();
+        role.setRole(roleName);
+        role.setRoleType(roleTypee);
+        role.onCreate();
+
+        return new ApiResponseHandler("role created successfully",masterApiRepository.saveRole(role), ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
+    }
+
+    public ApiResponseHandler findRolesByCreatedBy(String createdBy) {
+        return new ApiResponseHandler("success", masterApiRepository.findRolesByCreatedBy(createdBy), ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
     }
 }

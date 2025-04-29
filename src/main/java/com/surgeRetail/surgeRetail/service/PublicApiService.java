@@ -1,9 +1,7 @@
 package com.surgeRetail.surgeRetail.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.surgeRetail.surgeRetail.document.userAndRoles.SuperAdminInfo;
 import com.surgeRetail.surgeRetail.document.userAndRoles.User;
-import com.surgeRetail.surgeRetail.mailServices.EmailDetails;
 import com.surgeRetail.surgeRetail.mailServices.services.EmailService;
 import com.surgeRetail.surgeRetail.mailServices.services.EmailServiceImpl;
 import com.surgeRetail.surgeRetail.repository.ConfidentialApiRepository;
@@ -109,15 +107,6 @@ public class PublicApiService {
         user.setRoles(roles);
 
         User savedUser = publicApiRepository.save(user);
-
-        SuperAdminInfo superAdminInfo = new SuperAdminInfo();
-        superAdminInfo.setSuperAdminSecret(passwordEncoder.encode(superAdminSecret));
-        superAdminInfo.setUserId(savedUser.getId());
-        superAdminInfo.setCreatedOn(Instant.now());
-        superAdminInfo.setModifiedOn(Instant.now());
-        superAdminInfo.setActive(true);
-
-        publicApiRepository.saveSuperAdminInfo(superAdminInfo);
 
         HashMap<Object, Object> responseMap = new HashMap<>();
         responseMap.put("id", user.getId());

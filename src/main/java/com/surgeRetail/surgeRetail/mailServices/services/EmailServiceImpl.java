@@ -69,8 +69,7 @@ public class EmailServiceImpl implements EmailService{
                     FileSystemResource fileSystemResource = new FileSystemResource(file);
                     messageHelper.addAttachment(file.getName(), fileSystemResource);
 
-                    System.out.println(filePath + "   "+ file.getAbsolutePath()+"   "+file.getName());
-                } else {
+                    } else {
                     System.err.println("Attachment file not found: " + filePath);
                 }
             }

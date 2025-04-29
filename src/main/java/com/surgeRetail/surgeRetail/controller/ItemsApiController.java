@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -73,19 +74,19 @@ public class ItemsApiController {
             }
         }
 
-        String profitPercentage = (String) requestMap.get("profitToGainInPercentage");
+        Object profitPercentage = requestMap.get("profitToGainInPercentage");
         BigDecimal profitToGainInPercentage = null;
         
 
         String bsPrice = (String) requestMap.get("baseSellingPrice");
         BigDecimal baseSellingPrice=null;
         
-        if (!StringUtils.isEmpty(profitPercentage) && !StringUtils.isEmpty(bsPrice) || StringUtils.isEmpty(profitPercentage) && StringUtils.isEmpty(bsPrice))      // checking both baseSellingPrice and profitToGainInPercentage should not be present
+        if (!StringUtils.isEmpty(String.valueOf(profitPercentage)) && !StringUtils.isEmpty(bsPrice) || StringUtils.isEmpty(String.valueOf(profitPercentage)) && StringUtils.isEmpty(bsPrice))      // checking both baseSellingPrice and profitToGainInPercentage should not be present
             return new ApiResponseHandler("please provide any one profitToGainInPercentage or baseSellingPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
         
-        if (!StringUtils.isEmpty(profitPercentage)){
+        if (!StringUtils.isEmpty(String.valueOf(profitPercentage))){
             try {
-                profitToGainInPercentage = new BigDecimal(profitPercentage);
+                profitToGainInPercentage = new BigDecimal(String.valueOf(profitPercentage));
             }catch (Exception e){
                 return new ApiResponseHandler("please provide valid values in profitToGainInPercentage", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
             }
@@ -99,10 +100,10 @@ public class ItemsApiController {
             }
         }
 
-        String addPrice = (String)requestMap.get("additionalPrice");
+        Object addPrice = requestMap.get("additionalPrice");
         BigDecimal additionalPrice;
         try {
-            additionalPrice = new BigDecimal(addPrice);
+            additionalPrice = new BigDecimal(String.valueOf(addPrice));
         }catch (Exception e){
             return new ApiResponseHandler("please provide additionalPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
         }
@@ -111,44 +112,45 @@ public class ItemsApiController {
         if (StringUtils.isEmpty(stockUnit))
             return new ApiResponseHandler("please provide stockUnit",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
-        List<String> appTaxes = (List<String>) requestMap.get("applicableTaxes");
-        Set<String> applicableTaxes = new HashSet<>(appTaxes);
+        List<String> appTaxes = (ArrayList<String>) requestMap.get("applicableTaxes");
+        Set<String> applicableTaxes = CollectionUtils.isEmpty(appTaxes)?null: new HashSet<>(appTaxes);
+
 
         List<String> dmIds = (List<String>) requestMap.get("discountMasterIds");
-        Set<String> discountMasterIds = new HashSet<>(dmIds);
+        Set<String> discountMasterIds = CollectionUtils.isEmpty(dmIds)?null:new HashSet<>(dmIds);
 
         String brand = (String) requestMap.get("brand");
 
         List<String> catIds = (List<String>) requestMap.get("categoryIds");
-        Set<String> categoryIds = new HashSet<>(catIds);
+        Set<String> categoryIds = CollectionUtils.isEmpty(catIds)? null: new HashSet<>(catIds);
 
         String supplierId = (String)requestMap.get("supplierId");
 
         String description = (String) requestMap.get("description");
 
         List<String> imageInfoIds = (List<String>)requestMap.get("itemImageInfoIds");
-        List<String> itemImageInfoIds = new ArrayList<>(imageInfoIds);
+        List<String> itemImageInfoIds = CollectionUtils.isEmpty(imageInfoIds)?null:new ArrayList<>(imageInfoIds);
 
-        String stock = (String) requestMap.get("itemStock");
+        Object stock = requestMap.get("itemStock");
         Float itemStock = null;
         try {
-            itemStock = Float.parseFloat(stock);
+            itemStock = Float.parseFloat(String.valueOf(stock));
         }catch (Exception e){
             return new ApiResponseHandler("please provide valid values in itemStock can be integer or decimal", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
         }
 
 
-        String sThreshold = (String) requestMap.get("stockThreshold");
+        Object sThreshold = requestMap.get("stockThreshold");
         Float stockThreshold = null;
         try {
-            stockThreshold = Float.parseFloat(sThreshold);
+            stockThreshold = Float.parseFloat(String.valueOf(sThreshold));
         }catch (Exception e){
             return new ApiResponseHandler("please provide valid values in stockThreshold can be integer or decimal", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
         }
 
 
         List<String> tutLinks = (List<String>) requestMap.get("tutorialLinks");
-        Set<String> tutorialLinks = new HashSet(tutLinks);
+        Set<String> tutorialLinks = CollectionUtils.isEmpty(tutLinks)?null:new HashSet(tutLinks);
 
         String skuCode = (String) requestMap.get("skuCode");
         String barcode = (String) requestMap.get("barcode");
@@ -156,10 +158,17 @@ public class ItemsApiController {
         Boolean isReturnable = (Boolean) requestMap.get("isReturnable");
         Boolean isWarrantyAvailable = (Boolean) requestMap.get("isWarrantyAvailable");
 
-        Integer warrantyYears = (Integer) requestMap.get("warrantyPeriodYears");
-        Integer warrantyMonths = (Integer) requestMap.get("warrantyPeriodMonths");
-        Integer warrantyDays = (Integer) requestMap.get("warrantyPeriodDays");
+        String wPeriodYears = String.valueOf(requestMap.get("warrantyPeriodYears"));
+        Integer warrantyYears = (wPeriodYears == null || wPeriodYears.isEmpty()) ? 0 : Integer.parseInt(wPeriodYears);
+
+        String wPeriodMonths = String.valueOf(requestMap.get("warrantyPeriodMonths"));
+        Integer warrantyMonths = (wPeriodMonths == null || wPeriodMonths.isEmpty()) ? 0 : Integer.parseInt(wPeriodMonths);
+
+        String wPeriodDays = String.valueOf(requestMap.get("warrantyPeriodDays"));
+        Integer warrantyDays = (wPeriodDays == null || wPeriodDays.isEmpty()) ? 0 : Integer.parseInt(wPeriodDays);
+
         Period period = Period.of(warrantyYears, warrantyMonths, warrantyDays);
+
 
         String expDate = (String)requestMap.get("expiryDate");
         Instant expiryDate = null;

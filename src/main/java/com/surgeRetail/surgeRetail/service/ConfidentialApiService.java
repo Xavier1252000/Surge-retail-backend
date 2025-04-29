@@ -2,11 +2,9 @@ package com.surgeRetail.surgeRetail.service;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.surgeRetail.surgeRetail.document.master.RoleMaster;
 import com.surgeRetail.surgeRetail.document.userAndRoles.ClientDetails;
-import com.surgeRetail.surgeRetail.document.userAndRoles.SuperAdminInfo;
 import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import com.surgeRetail.surgeRetail.repository.ConfidentialApiRepository;
 import com.surgeRetail.surgeRetail.repository.PublicApiRepository;
@@ -20,7 +18,6 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Service
@@ -145,22 +142,11 @@ public class ConfidentialApiService {
         user.setModifiedOn(Instant.now());
 
         Set<String> roles = new HashSet<>();
-        roles.add(User.USER_ROLE_USER);
-        roles.add(User.USER_ROLE_STORE_ADMIN);
         roles.add(User.USER_ROLE_SUPER_ADMIN);
 
         user.setRoles(roles);
 
         User savedUser = publicApiRepository.save(user);
-
-        SuperAdminInfo superAdminInfo = new SuperAdminInfo();
-        superAdminInfo.setSuperAdminSecret(passwordEncoder.encode(superAdminSecret));
-        superAdminInfo.setUserId(savedUser.getId());
-        superAdminInfo.setCreatedOn(Instant.now());
-        superAdminInfo.setModifiedOn(Instant.now());
-        superAdminInfo.setActive(true);
-
-        publicApiRepository.saveSuperAdminInfo(superAdminInfo);
 
         HashMap<Object, Object> responseMap = new HashMap<>();
         responseMap.put("id", user.getId());
@@ -183,53 +169,5 @@ public class ConfidentialApiService {
         roleMaster.setDescription(description);
         RoleMaster savedRole = confidentialApiRepository.saveRoleMaster(roleMaster);
         return new ApiResponseHandler("role created", savedRole, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
-    }
-
-    public ApiResponseHandler getAllUsers(Integer index, Integer itemPerIndex, List<String> userIds, List<String> roles, Boolean active, Instant fromDate, Instant toDate) {
-        List<User> allUsers = confidentialApiRepository.getAllUsers(index, itemPerIndex, userIds, roles, active, fromDate, toDate);
-        ArrayNode arrayNode = objectMapper.createArrayNode();
-        allUsers.forEach(e->{
-            try {
-                ObjectNode node = AppUtils.mapObjectToObjectNode(e);
-                arrayNode.add(node);
-            } catch (IllegalAccessException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
-
-        return new ApiResponseHandler("All Users", arrayNode, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
-    }
-
-    public ApiResponseHandler addClientDetails(String userId, String displayName, String secondaryEmail, String alternateContactNo, String languagePreference, String timeZone, String businessRegistrationNo, String businessType, String country, String state, String city, String postalCode, String address) {
-        User client = confidentialApiRepository.findUserRegAsClientByUserId(userId);
-        if (client == null)
-            return new ApiResponseHandler("no client registered with providedId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-        ClientDetails cd = new ClientDetails();
-        cd.setUserId(userId);
-        cd.setDisplayName(displayName);
-        cd.setSecondaryEmail(secondaryEmail);
-        cd.setAlternateContactNo(alternateContactNo);
-        cd.setLanguagePreference(languagePreference);
-        cd.setTimeZone(timeZone);
-        cd.setBusinessRegistrationNo(businessRegistrationNo);
-        cd.setBusinessType(businessType);
-        cd.setCountry(country);
-        cd.setState(state);
-        cd.setCity(city);
-        cd.setPostalCode(postalCode);
-        cd.setAddress(address);
-
-        cd.setSubscriptionStatus(false);
-        cd.setCurrentSubscriptionDetails(null);
-
-        ClientDetails clientDetails = confidentialApiRepository.saveClientDetails(cd);
-        ObjectNode node = objectMapper.createObjectNode();
-        try {
-            node = AppUtils.mapObjectToObjectNode(clientDetails);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-
-        return new ApiResponseHandler("client details saved successfully", node, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
     }
 }

@@ -1,12 +1,17 @@
 package com.surgeRetail.surgeRetail.controller;
 
+import com.cloudinary.Api;
 import com.surgeRetail.surgeRetail.document.master.DiscountMaster;
 import com.surgeRetail.surgeRetail.document.master.TaxMaster;
+import com.surgeRetail.surgeRetail.document.master.TimezoneMaster;
 import com.surgeRetail.surgeRetail.service.MasterApiService;
+import com.surgeRetail.surgeRetail.utils.requestHandlers.ApiRequestHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
 import io.micrometer.common.util.StringUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -193,5 +198,103 @@ public class MasterApiController {
             return new ApiResponseHandler("please provide unit", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
         }
         return masterApiService.addUnit(unit, unitNotation);
+    }
+
+
+
+
+//    --------------------------------------------------Country master-------------------------------------------------------------
+    @PostMapping("/add-country-master")
+    public ResponseEntity<ApiResponseHandler> addCountryMaster(@RequestBody ApiRequestHandler apiRequestHandler){
+        String name = apiRequestHandler.getStringValue("name");
+        if(StringUtils.isEmpty(name)){
+            return new ResponseEntity<>(new ApiResponseHandler("please provide name", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+        }
+
+        String currency = apiRequestHandler.getStringValue("currency");
+        if(StringUtils.isEmpty(currency)){
+            return new ResponseEntity<>(new ApiResponseHandler("please provide country", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+        }
+
+        String code = apiRequestHandler.getStringValue("code");
+        if(StringUtils.isEmpty(name)){
+            return new ResponseEntity<>(new ApiResponseHandler("please provide code", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+        }
+
+        String symbol = apiRequestHandler.getStringValue("symbol");
+        if(StringUtils.isEmpty(symbol)){
+            return new ResponseEntity<>(new ApiResponseHandler("please provide symbol", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+        }
+
+        String callingCode = apiRequestHandler.getStringValue("callingCode");
+        if(StringUtils.isEmpty(callingCode)){
+            return new ResponseEntity<>(new ApiResponseHandler("please provide symbol", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+        }
+
+        List<TimezoneMaster> timeZones = apiRequestHandler.getListValue("timeZones", TimezoneMaster.class);
+
+
+        ApiResponseHandler apiResponseHandler = masterApiService.addCountryMaster(name, currency, code, symbol, callingCode, timeZones);
+        return new ResponseEntity<>(apiResponseHandler, HttpStatus.CREATED);
+    }
+
+
+    @GetMapping("/get-all-country-masters")
+    public ResponseEntity<ApiResponseHandler> getAllCountryMaster(){
+        return new ResponseEntity<>(masterApiService.getAllCountryMaters(), HttpStatus.OK);
+    }
+
+
+
+//    ----------------------------------------------TimezoneMaster-------------------------------------
+
+    @PostMapping("/add-currency-master")
+    public ResponseEntity<ApiResponseHandler> addTimeZoneMaster(@RequestBody ApiRequestHandler apiRequestHandler){
+        String name = apiRequestHandler.getStringValue("name");
+        if(StringUtils.isEmpty(name)){
+            return new ResponseEntity<>(new ApiResponseHandler("please provide name", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+        }
+
+        String offSet = apiRequestHandler.getStringValue("offSet");
+        if(StringUtils.isEmpty(offSet)){
+            return new ResponseEntity<>(new ApiResponseHandler("please provide offSet", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+        }
+
+        String countryId = apiRequestHandler.getStringValue("countryId");
+        if(StringUtils.isEmpty(countryId)){
+            return new ResponseEntity<>(new ApiResponseHandler("please provide countryId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+        }
+
+        String dtsSupported = apiRequestHandler.getStringValue("dstSupported");
+        if(StringUtils.isEmpty(dtsSupported)){
+            return new ResponseEntity<>(new ApiResponseHandler("please provide dstSupported", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+        }
+
+        ApiResponseHandler apiResponseHandler = masterApiService.addTimeZoneMaster(name, offSet, countryId, dtsSupported);
+        return new ResponseEntity<>(apiResponseHandler, HttpStatus.CREATED);
+    }
+
+
+//    --------------------------------------Roles--------------------------------------
+    @PostMapping("/create-role")
+    public ResponseEntity<ApiResponseHandler> createRole(@RequestBody ApiRequestHandler apiRequestHandler){
+        String role = apiRequestHandler.getStringValue("roleName");
+        if (StringUtils.isEmpty(role))
+            return new ResponseEntity<>(new ApiResponseHandler("please provide roleName", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+
+        String roleTypee = apiRequestHandler.getStringValue("roleType");
+        if (StringUtils.isEmpty(roleTypee))
+            return new ResponseEntity<>(new ApiResponseHandler("please provide roleType, can be Primary or Custom", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+
+        return new ResponseEntity<>(masterApiService.createRole(role, roleTypee), HttpStatus.CREATED);
+    }
+
+    @PostMapping("get-roles")
+    public ResponseEntity<ApiResponseHandler> getRoles(@RequestBody ApiRequestHandler apiRequestHandler){
+        String createdBy = apiRequestHandler.getStringValue("createdBy");      //generally superadmin or client id is reuired
+        if (StringUtils.isEmpty(createdBy))
+            return new ResponseEntity<>(new ApiResponseHandler("please provide the createdBy", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(masterApiService.findRolesByCreatedBy(createdBy), HttpStatus.CREATED);
+
     }
 }

@@ -1,9 +1,6 @@
 package com.surgeRetail.surgeRetail.repository;
 
-import com.surgeRetail.surgeRetail.document.master.DiscountMaster;
-import com.surgeRetail.surgeRetail.document.master.ItemsCategoryMaster;
-import com.surgeRetail.surgeRetail.document.master.TaxMaster;
-import com.surgeRetail.surgeRetail.document.master.UnitMaster;
+import com.surgeRetail.surgeRetail.document.master.*;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import io.micrometer.common.util.StringUtils;
 import org.springframework.boot.autoconfigure.graphql.data.GraphQlQueryByExampleAutoConfiguration;
@@ -94,5 +91,31 @@ public class MasterApiRepository {
 
         query.addCriteria(criteria);
         return mongoTemplate.find(query, TaxMaster.class);
+    }
+
+    public CountryMaster saveCountryMaster(CountryMaster countryMaster) {
+        return mongoTemplate.save(countryMaster);
+    }
+
+    public List<CountryMaster> getAllCountryMasters() {
+        return mongoTemplate.findAll(CountryMaster.class);
+    }
+
+    public TimezoneMaster saveTimezones(TimezoneMaster timezones) {
+        return mongoTemplate.save(timezones);
+    }
+
+    public List<TimezoneMaster> getAllTimezoneMaster() {
+        return mongoTemplate.findAll(TimezoneMaster.class);
+    }
+
+    public Roles saveRole(Roles role) {
+        return mongoTemplate.save(role);
+    }
+
+    public List<Roles> findRolesByCreatedBy(String createdBy) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("createdBy").is(createdBy));
+        return mongoTemplate.find(query, Roles.class);
     }
 }

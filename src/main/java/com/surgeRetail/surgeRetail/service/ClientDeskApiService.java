@@ -2,13 +2,17 @@ package com.surgeRetail.surgeRetail.service;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.surgeRetail.surgeRetail.document.store.OperatingHours;
 import com.surgeRetail.surgeRetail.document.store.Store;
 import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import com.surgeRetail.surgeRetail.repository.ClientDeskApiRepository;
 import com.surgeRetail.surgeRetail.repository.ConfidentialApiRepository;
 import com.surgeRetail.surgeRetail.repository.PublicApiRepository;
 import com.surgeRetail.surgeRetail.security.UserDetailsImpl;
+import com.surgeRetail.surgeRetail.utils.AppUtils;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
@@ -35,6 +39,9 @@ public class ClientDeskApiService {
         this.objectMapper = objectMapper;
         this.confidentialApiRepository = confidentialApiRepository;
     }
+
+
+
     public ApiResponseHandler registerUserWithCustomRoles(String firstName, String lastName, String emailId, String mobileNo, String username, String password, Set<String>roles, String superAdminSecret, String clientSecret) {
 
         User customUser = new User();
@@ -71,7 +78,9 @@ public class ClientDeskApiService {
     }
 
 
-    public ApiResponseHandler addStore(String clientId, String storeName, String storeContactNo, String registrationNo, String taxIdentificationId, String taxIdentificationNo, String city, String state, String country, Set<String> storeAdminIds, String pinCode) {
+    public ApiResponseHandler addStore(String clientId, String storeType, String storeName, String contactNo, String registrationNo, String taxIdentificationId, String taxIdentificationNo, String address, String city, String state, String country, Set<String> storeAdminIds, String pinCode, String email, String timezone, Set<OperatingHours> operatingHours, String currency) {
+
+        objectMapper.registerModule(new JavaTimeModule());
 
 //      in case clientId is externally provided by super-admin, not taken from SecurityContextHolder when client is creating store
         User client = publicApiRepository.findUserByUserId(clientId);
@@ -80,28 +89,37 @@ public class ClientDeskApiService {
 
         Store store = new Store();
         store.setClientId(clientId);
+        store.setStoreType(storeType);
         store.setStoreName(storeName);
-        store.setContactNo(storeContactNo);
+        store.setContactNo(contactNo);
         store.setRegistrationNo(registrationNo);
         store.setTaxIdentificationId(taxIdentificationId);
         store.setTaxIdentificationNo(taxIdentificationNo);
+        store.setEmail(email);
+        store.setTimezone(timezone);
+        store.setOperatingHours(operatingHours);
+        store.setAddress(address);
         store.setCity(city);
         store.setPostalCode(pinCode);
         store.setState(state);
         store.setCountry(country);
         store.setStoreAdminIds(storeAdminIds);
+        store.setCurrency(currency);
         store.onCreate();
 
         Store savedStore = cdRepository.saveStore(store);
         ObjectNode node  = objectMapper.createObjectNode();
         node.put("id", savedStore.getId());
-        node.put("storeName", savedStore.getStoreName());
+        node.put("store_Name", savedStore.getStoreName());
         node.put("storeContactNo", savedStore.getContactNo());
         node.put("registrationNo", savedStore.getRegistrationNo());
-        node.put("gstNo", savedStore.getTaxIdentificationNo());
+        node.put("taxIdentificationId", savedStore.getTaxIdentificationId());
+        node.put("taxIdentificationNo",taxIdentificationNo);
         node.put("pinCode", store.getPostalCode());
         node.put("city", savedStore.getCity());
         node.put("state", savedStore.getState());
+        node.set("operating_hours", objectMapper.valueToTree(savedStore.getOperatingHours()));
+        node.put("timezone", savedStore.getTimezone());
         node.put("country", savedStore.getCountry());
         node.put("createdOn", String.valueOf(savedStore.getCreatedOn()));
         node.put("modifiedOn", String.valueOf(savedStore.getModifiedOn()));
@@ -109,5 +127,18 @@ public class ClientDeskApiService {
         node.put("updatedBy",savedStore.getModifiedBy());
         node.put("active",savedStore.getActive());
         return new ApiResponseHandler("store created successfully!!!", node, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
+    }
+
+    public ApiResponseHandler findStoreByStoreAdminId(String storeAdminId) {
+        Store storeByStoreAdminId = cdRepository.findStoreByStoreAdminId(storeAdminId);
+        if (storeByStoreAdminId==null)
+            return new ApiResponseHandler("No store found for user", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        ObjectNode node = objectMapper.createObjectNode();
+        try {
+            node = AppUtils.mapObjectToObjectNode(storeByStoreAdminId);
+        } catch (IllegalAccessException e) {
+            return new ApiResponseHandler("internal server error", null, ResponseStatus.INTERNAL_SERVER_ERROR, ResponseStatusCode.INTERNAL_SERVER_ERROR, true);
+        }
+        return new ApiResponseHandler("Store fetched successfully", node, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
     }
 }

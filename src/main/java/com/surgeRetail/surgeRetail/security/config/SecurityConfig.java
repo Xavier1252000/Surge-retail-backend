@@ -53,6 +53,7 @@ public class SecurityConfig {
                         .requestMatchers("/confidential/**").hasAuthority(User.USER_ROLE_SUPER_ADMIN)
                         .requestMatchers("/client-desk/**").hasAuthority(User.USER_ROLE_CLIENT)
                         .requestMatchers("/permissions/**").hasAnyAuthority(User.USER_ROLE_SUPER_ADMIN, User.USER_ROLE_CLIENT)
+                        .requestMatchers("/users/**").hasAnyAuthority(User.USER_ROLE_CLIENT, User.USER_ROLE_SUPER_ADMIN, User.USER_ROLE_STORE_ADMIN)
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider())

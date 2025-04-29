@@ -101,46 +101,6 @@ public class ConfidentialApiController {
         return new ResponseEntity<>(confidentialApiService.registerClient(firstName, lastName, emailId, mobileNo, username, password), HttpStatus.CREATED);
     }
 
-    @PostMapping("/add-client-details")
-    public ResponseEntity<ApiResponseHandler> addClientDetails(@RequestBody ApiRequestHandler apiRequestHandler){
-        String userId = apiRequestHandler.getStringValue("userId");
-        if (StringUtils.isEmpty(userId))
-            return new ResponseEntity<>(new ApiResponseHandler("please provide userId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
-
-        String displayName = apiRequestHandler.getStringValue("displayName");
-
-        String secondaryEmail = apiRequestHandler.getStringValue("secondaryEmail");
-
-        String alternateContactNo = apiRequestHandler.getStringValue("alternateContactNo");
-
-        String languagePreference = apiRequestHandler.getStringValue("languagePreference");
-
-        String timeZone = apiRequestHandler.getStringValue("timeZone");
-
-        String businessRegistrationNo = apiRequestHandler.getStringValue("businessRegistrationNo");
-
-        String businessType = apiRequestHandler.getStringValue("businessType");
-
-        String country = apiRequestHandler.getStringValue("country");
-
-        String state = apiRequestHandler.getStringValue("state");
-
-        String city = apiRequestHandler.getStringValue("city");
-
-        String postalCode = apiRequestHandler.getStringValue("postalCode");
-
-        String address = apiRequestHandler.getStringValue("address");
-
-        ApiResponseHandler apiResponseHandler = confidentialApiService.addClientDetails(userId, displayName, secondaryEmail, alternateContactNo, languagePreference, timeZone, businessRegistrationNo, businessType,
-                country, state, city, postalCode, address);
-        if (apiResponseHandler.getStatusCode() != 201)
-            return new ResponseEntity<>(apiResponseHandler, HttpStatus.BAD_REQUEST);
-
-        return new ResponseEntity<>(apiResponseHandler, HttpStatus.CREATED);
-    }
-
-
-
     @PostMapping("/register-super-user")
     public ApiResponseHandler registerFirstSuperUser(@RequestBody Map<String, Object> requestMap){
         String firstName = (String) requestMap.get("firstName");
@@ -173,74 +133,6 @@ public class ConfidentialApiController {
             return new ApiResponseHandler("please provide superAdminSecret", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
         return confidentialApiService.registerSuperUser(firstName, lastName, username, emailId, mobileNo, password, superAdminSecret);
-    }
-
-    @PostMapping("register-user-with-custom-roles")
-    public ApiResponseHandler registerUserWithCustomRoles(@RequestBody ApiRequestHandler apiRequestHandler){
-        String firstName = apiRequestHandler.getStringValue("firstName");
-        if (StringUtils.isEmpty(firstName))
-            return new ApiResponseHandler("please provide firstName", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-
-        String lastName = apiRequestHandler.getStringValue("lastName");
-        if (StringUtils.isEmpty(lastName))
-            return new ApiResponseHandler("please provide lastName", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-
-        String emailId = apiRequestHandler.getStringValue("emailId");
-        if (StringUtils.isEmpty(emailId))
-            return new ApiResponseHandler("please provide emailId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-
-        String mobileNo = apiRequestHandler.getStringValue("mobileNo");
-        if (StringUtils.isEmpty(mobileNo))
-            return new ApiResponseHandler("please provide mobileNo", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-
-        String password = apiRequestHandler.getStringValue("password");
-        if (StringUtils.isEmpty(password))
-            return new ApiResponseHandler("please provide password", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-
-        String username = apiRequestHandler.getStringValue("username");
-        if (StringUtils.isEmpty(username))
-            return new ApiResponseHandler("please provide username", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-
-        String superAdminSecret = null;
-        List<String> roles = apiRequestHandler.getListValue("roles", String.class);
-        if (roles.contains(User.USER_ROLE_SUPER_ADMIN)) {
-            superAdminSecret = apiRequestHandler.getStringValue("superAdminSecret");
-            if (StringUtils.isEmpty(superAdminSecret))
-                return new ApiResponseHandler("please provide superAdminSecret", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-        }
-
-        String clientSecret=null;
-        if (roles.contains(User.USER_ROLE_CLIENT)){
-            clientSecret = apiRequestHandler.getStringValue("clientSecret");
-            if (StringUtils.isEmpty(clientSecret))
-                return new ApiResponseHandler("please provide clientSecret", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-        }
-        return confidentialApiService.registerUserWithCustomRoles(firstName, lastName, emailId, mobileNo, username, password,superAdminSecret, clientSecret);
-    }
-
-    @PostMapping("/get-all-users")
-    public ResponseEntity<ApiResponseHandler> getAllUsers(@RequestBody ApiRequestHandler apiRequestHandler){
-        List<String> userIds = apiRequestHandler.getListValue("userIds", String.class);
-
-        Integer index = apiRequestHandler.getIntegerValue("index");
-        Integer itemPerIndex = apiRequestHandler.getIntegerValue("itemPerIndex");
-
-        Boolean active = apiRequestHandler.getBooleanValue("active");
-
-        List<String> roles = apiRequestHandler.getListValue("roles", String.class);
-
-        Instant fromDate = apiRequestHandler.getInstantValue("fromDate");
-        Instant toDate = apiRequestHandler.getInstantValue("toDate");
-
-        String rawFromDate = apiRequestHandler.getStringValue("fromDate");
-        if (rawFromDate != null && fromDate == null)
-            return  new ResponseEntity<>(new ApiResponseHandler("please provide fromDate in yyyy-MM-ddTHH:MM:SS.nnnZ format", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
-
-        if (apiRequestHandler.getStringValue("toDate") != null && fromDate == null)
-            return  new ResponseEntity<>(new ApiResponseHandler("please provide toDate in yyyy-MM-ddTHH:MM:SS.nnnZ", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
-
-        ApiResponseHandler allUsers = confidentialApiService.getAllUsers(index, itemPerIndex, userIds, roles, active, fromDate, toDate);
-        return ResponseEntity.ok(allUsers);
     }
 }
 

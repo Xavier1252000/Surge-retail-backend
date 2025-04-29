@@ -70,13 +70,9 @@ public class ConfidentialApiRepository {
         return mongoTemplate.find(query, User.class);
     }
 
-    public ClientDetails saveClientDetails(ClientDetails cd) {
-        return mongoTemplate.save(cd);
-    }
-
     public User findUserRegAsClientByUserId(String userId) {
         Query query = new Query();
-        Criteria criteria = Criteria.where("id").is(userId).and("roles").in(User.USER_ROLE_CLIENT);
+        Criteria criteria = Criteria.where("id").is(userId).and("roles").is(User.USER_ROLE_CLIENT);
         query.addCriteria(criteria);
         return mongoTemplate.findOne(query, User.class);
     }

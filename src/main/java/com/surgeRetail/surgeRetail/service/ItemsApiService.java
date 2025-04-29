@@ -41,6 +41,11 @@ public class ItemsApiService {
     }
     public ApiResponseHandler addItemToStore(Item item) {
 
+        System.out.println(item.getStoreId());
+        String storeId = item.getStoreId();
+        if(!itemsApiRepository.isStoreExistsById(storeId))
+            return new ApiResponseHandler("store not exists with providedId",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
 //        Setting profit percentage or profitMargin with the help of other one
         if (item.getProfitToGainInPercentage() != null) {
             BigDecimal profitMargin = item.getProfitToGainInPercentage()
@@ -60,37 +65,43 @@ public class ItemsApiService {
         }
 
         Set<String> applicableTaxMasterIds = item.getApplicableTaxes();
-        List<TaxMaster> taxMasterByIds = masterApiRepository.findTaxMasterByIds(applicableTaxMasterIds);
-        Set<String> retrievedTaxMasterIds = taxMasterByIds.stream().map(x -> x.getId()).collect(Collectors.toSet());
-        for (String e : applicableTaxMasterIds){
-            if (!retrievedTaxMasterIds.contains(e))
-                return new ApiResponseHandler("tax not found with taxMasterId: "+e, null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-        }
+        if (!CollectionUtils.isEmpty(applicableTaxMasterIds)) {
+            List<TaxMaster> taxMasterByIds = masterApiRepository.findTaxMasterByIds(applicableTaxMasterIds);
+            Set<String> retrievedTaxMasterIds = taxMasterByIds.stream().map(x -> x.getId()).collect(Collectors.toSet());
 
-        BigDecimal totalTaxPrice = BigDecimal.valueOf(0);
-        for (TaxMaster t:taxMasterByIds){
-            BigDecimal taxPercentage = t.getTaxPercentage();
-            BigDecimal taxPrice = (item.getBaseSellingPrice().multiply(taxPercentage)).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-            totalTaxPrice = totalTaxPrice.add(taxPrice);
+            for (String e : applicableTaxMasterIds) {
+                if (!retrievedTaxMasterIds.contains(e))
+                    return new ApiResponseHandler("tax not found with taxMasterId: " + e, null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            }
+
+
+            BigDecimal totalTaxPrice = BigDecimal.valueOf(0);
+            for (TaxMaster t : taxMasterByIds) {
+                BigDecimal taxPercentage = t.getTaxPercentage();
+                BigDecimal taxPrice = (item.getBaseSellingPrice().multiply(taxPercentage)).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+                totalTaxPrice = totalTaxPrice.add(taxPrice);
+            }
+            item.setTotalTaxPrice(totalTaxPrice);
         }
-        item.setTotalTaxPrice(totalTaxPrice);
 
 
 //      Setting  Discount master     -------------------->
         Set<String> discountMasterIds = item.getDiscountMasterIds();
-        List<DiscountMaster> discountMasterByIds = masterApiRepository.findDiscountMasterByIds(discountMasterIds);
-        Set<String> retDiscountMasterIds = discountMasterByIds.stream().map(x -> x.getId()).collect(Collectors.toSet());
-        for (String e:discountMasterIds){
-            if (!retDiscountMasterIds.contains(e))
-                return new ApiResponseHandler("discount not found by discountMasterId: "+e, null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        if (!CollectionUtils.isEmpty(discountMasterIds)) {
+            List<DiscountMaster> discountMasterByIds = masterApiRepository.findDiscountMasterByIds(discountMasterIds);
+            Set<String> retDiscountMasterIds = discountMasterByIds.stream().map(x -> x.getId()).collect(Collectors.toSet());
+            for (String e : discountMasterIds) {
+                if (!retDiscountMasterIds.contains(e))
+                    return new ApiResponseHandler("discount not found by discountMasterId: " + e, null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            }
+            BigDecimal totalDiscountPrice = null;
+            for (DiscountMaster d : discountMasterByIds) {
+                BigDecimal discountPercentage = d.getDiscountPercentage();
+                BigDecimal discountPrice = (item.getBaseSellingPrice().multiply(discountPercentage)).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+                totalDiscountPrice = item.getTotalDiscountPrice().add(discountPrice);
+            }
+            item.setTotalDiscountPrice(totalDiscountPrice);
         }
-        BigDecimal totalDiscountPrice = null;
-        for (DiscountMaster d:discountMasterByIds){
-            BigDecimal discountPercentage = d.getDiscountPercentage();
-            BigDecimal discountPrice = (item.getBaseSellingPrice().multiply(discountPercentage)).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-            totalDiscountPrice = item.getTotalDiscountPrice().add(discountPrice);
-        }
-        item.setTotalDiscountPrice(totalDiscountPrice);
 
         item.setFinalPrice(item.getBaseSellingPrice()
                 .add(item.getTotalTaxPrice())
