@@ -145,14 +145,8 @@ public class UserApiService {
         cd.onUpdate();
 
         ClientDetails clientDetails = userApiRepository.saveClientDetails(cd);
-        ObjectNode node = objectMapper.createObjectNode();
-        try {
-            node = AppUtils.mapObjectToObjectNode(clientDetails);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
 
-        return new ApiResponseHandler("client details saved successfully", node, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
+        return new ApiResponseHandler("client details saved successfully", clientDetails, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
     }
 
     public ResponseEntity<ApiResponseHandler> getClientByUserId(String userId) {

@@ -245,36 +245,6 @@ public class MasterApiController {
     }
 
 
-
-//    ----------------------------------------------TimezoneMaster-------------------------------------
-
-    @PostMapping("/add-currency-master")
-    public ResponseEntity<ApiResponseHandler> addTimeZoneMaster(@RequestBody ApiRequestHandler apiRequestHandler){
-        String name = apiRequestHandler.getStringValue("name");
-        if(StringUtils.isEmpty(name)){
-            return new ResponseEntity<>(new ApiResponseHandler("please provide name", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
-        }
-
-        String offSet = apiRequestHandler.getStringValue("offSet");
-        if(StringUtils.isEmpty(offSet)){
-            return new ResponseEntity<>(new ApiResponseHandler("please provide offSet", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
-        }
-
-        String countryId = apiRequestHandler.getStringValue("countryId");
-        if(StringUtils.isEmpty(countryId)){
-            return new ResponseEntity<>(new ApiResponseHandler("please provide countryId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
-        }
-
-        String dtsSupported = apiRequestHandler.getStringValue("dstSupported");
-        if(StringUtils.isEmpty(dtsSupported)){
-            return new ResponseEntity<>(new ApiResponseHandler("please provide dstSupported", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
-        }
-
-        ApiResponseHandler apiResponseHandler = masterApiService.addTimeZoneMaster(name, offSet, countryId, dtsSupported);
-        return new ResponseEntity<>(apiResponseHandler, HttpStatus.CREATED);
-    }
-
-
 //    --------------------------------------Roles--------------------------------------
     @PostMapping("/create-role")
     public ResponseEntity<ApiResponseHandler> createRole(@RequestBody ApiRequestHandler apiRequestHandler){

@@ -8,6 +8,7 @@ import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
 import io.micrometer.common.util.StringUtils;
+import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,25 +40,26 @@ public class PermissionsApiController {
         if(StringUtils.isEmpty(userId))
             return new ApiResponseHandler("please provide userId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
         List<ModulePermissions> modulePermissionsList = apiRequestHandler.getListValue("modulesPermissions", ModulePermissions.class);
+        System.out.println(modulePermissionsList);
+
         if(CollectionUtils.isEmpty(modulePermissionsList))
-            return new ApiResponseHandler("please provide modulePermissions", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ApiResponseHandler("Please provide module permissions", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
         if(!CollectionUtils.isEmpty(modulePermissionsList)){
             for(int i=0;i<modulePermissionsList.size();i++){
                 ModulePermissions modulePermissions = modulePermissionsList.get(i);
                 String moduleId = modulePermissions.getModuleId();
+                int a = i+1;
                 if(StringUtils.isEmpty(moduleId)){
-                    int a = i+1;
-                    return new ApiResponseHandler("please provide modulePermissions", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+                    return new ApiResponseHandler(a+"th module is invalid", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
                 }
                 List<String> permessionIds = modulePermissions.getPermissionIds();
                 if(CollectionUtils.isEmpty(permessionIds)){
-                    return new ApiResponseHandler("please provide modulePermissions", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+                    return new ApiResponseHandler("no permissions for module no : "+a, null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
                 }
                 for (String permissionId : permessionIds) {
-                    if (permissionId == null || permissionId == "") {
-                        int a = i + 1;
-                        return new ApiResponseHandler("please provide modulePermissions", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+                    if (StringUtils.isEmpty(permissionId)) {
+                        return new ApiResponseHandler("invalid permissions for module"+a, null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
                     }
                 }
             }}

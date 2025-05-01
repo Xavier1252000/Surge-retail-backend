@@ -73,7 +73,7 @@ public class PermissionApiService {
             userPermissionss.setModulesPermissions(modulePermissionsList1);
         }
         UserPermissions userPermissions1 = permissionApiRepository.saveOrUpdateUserPermissions(userPermissionss);
-        return new ApiResponseHandler("success",userPermissions1,ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS,false);
+        return new ApiResponseHandler("success",userPermissions1,ResponseStatus.CREATED, ResponseStatusCode.CREATED,false);
     }
 
     public ApiResponseHandler updateUserPermissions(String userId, List<ModulePermissions> modulePermissionsList){

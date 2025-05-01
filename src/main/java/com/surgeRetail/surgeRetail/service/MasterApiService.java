@@ -180,18 +180,12 @@ public class MasterApiService {
         return new ApiResponseHandler("successfull", rootNode, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
     }
 
-    public ApiResponseHandler addTimeZoneMaster(String name, String offSet, String countryId, String dtsSupported) {
-        return null;
-    }
-
     public ApiResponseHandler getAllCountryMaters() {
         List<CountryMaster> allCountryMasters = masterApiRepository.getAllCountryMasters();
-        List<String> countryMasterIds = allCountryMasters.stream().map(CountryMaster::getId).toList();
         List<TimezoneMaster> allTimezoneMaster = masterApiRepository.getAllTimezoneMaster();
         ArrayNode root = objectMapper.createArrayNode();
 
         allCountryMasters.forEach(e->{
-            ArrayNode timeZone = objectMapper.createArrayNode();
             List<TimezoneMaster> timeZones = allTimezoneMaster.stream().filter(x -> x.getCountryId().equals(e.getId())).toList();
             ObjectNode node = objectMapper.valueToTree(e);
             node.set("timeZones", objectMapper.valueToTree(timeZones));
