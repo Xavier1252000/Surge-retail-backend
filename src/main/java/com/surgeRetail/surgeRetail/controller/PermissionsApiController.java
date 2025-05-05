@@ -8,7 +8,6 @@ import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
 import io.micrometer.common.util.StringUtils;
-import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 

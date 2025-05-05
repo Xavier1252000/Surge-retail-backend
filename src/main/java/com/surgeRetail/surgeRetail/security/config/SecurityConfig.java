@@ -51,7 +51,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authorize)->authorize
                         .requestMatchers("/public/**").permitAll()
                         .requestMatchers("/confidential/**").hasAuthority(User.USER_ROLE_SUPER_ADMIN)
-                        .requestMatchers("/client-desk/**").hasAuthority(User.USER_ROLE_CLIENT)
+                        .requestMatchers("/client-desk/**").hasAnyAuthority(User.USER_ROLE_CLIENT, User.USER_ROLE_SUPER_ADMIN)
                         .requestMatchers("/permissions/**").hasAnyAuthority(User.USER_ROLE_SUPER_ADMIN, User.USER_ROLE_CLIENT)
                         .requestMatchers("/users/**").hasAnyAuthority(User.USER_ROLE_CLIENT, User.USER_ROLE_SUPER_ADMIN, User.USER_ROLE_STORE_ADMIN)
                         .anyRequest().authenticated())

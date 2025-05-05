@@ -21,7 +21,7 @@ public class Store extends Auditable {
     private String clientId;
 
     // Set of user IDs with admin privileges for this store
-    private Set<String> storeAdminIds = new HashSet<>();
+    private Set<String> staffIds = new HashSet<>();
 
     // Store details
     private String storeName;

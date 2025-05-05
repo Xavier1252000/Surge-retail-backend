@@ -33,50 +33,6 @@ public class ClientDeskApiController {
         this.clientDeskApiService = clientDeskApiService;
     }
 
-    @PostMapping("/add-custom-role-based-user")
-    public ApiResponseHandler customRoleBasedUsers(@RequestBody ApiRequestHandler apiRequestHandler){
-
-        String firstName = apiRequestHandler.getStringValue("firstName");
-        if (StringUtils.isEmpty(firstName))
-            return new ApiResponseHandler("please provide firstName", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-
-        String lastName = apiRequestHandler.getStringValue("lastName");
-        if (StringUtils.isEmpty(lastName))
-            return new ApiResponseHandler("please provide lastName", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-
-        String emailId = apiRequestHandler.getStringValue("emailId");
-        if (StringUtils.isEmpty(emailId))
-            return new ApiResponseHandler("please provide emailId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-
-        String mobileNo = apiRequestHandler.getStringValue("mobileNo");
-        if (StringUtils.isEmpty(mobileNo))
-            return new ApiResponseHandler("please provide mobileNo", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-
-        String password = apiRequestHandler.getStringValue("password");
-        if (StringUtils.isEmpty(password))
-            return new ApiResponseHandler("please provide password", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-
-        String username = apiRequestHandler.getStringValue("username");
-        if (StringUtils.isEmpty(username))
-            return new ApiResponseHandler("please provide username", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-
-//      checking if client is creating valid and permissible roles
-        String superAdminSecret = null;
-        Set<String> roles = apiRequestHandler.getSetValue("roles", String.class);
-        for (String r:roles){
-            if (!clientCanCreateRoles().contains(r))
-                return new ApiResponseHandler("Role "+ r +"is invalid, please provide valid roles", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-        }
-
-        String clientSecret=null;
-        if (roles.contains(User.USER_ROLE_CLIENT)){
-            clientSecret = apiRequestHandler.getStringValue("clientSecret");
-            if (StringUtils.isEmpty(clientSecret))
-                return new ApiResponseHandler("please provide clientSecret", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-        }
-        return clientDeskApiService.registerUserWithCustomRoles(firstName, lastName, emailId, mobileNo, username, password, roles, superAdminSecret, clientSecret);
-    }
-
     public static List<String> clientCanCreateRoles(){
         List<String> roles = new ArrayList<>();
         roles.add(User.USER_ROLE_STORE_ADMIN);
@@ -128,10 +84,10 @@ public class ClientDeskApiController {
         String state = apiRequestHandler.getStringValue("state");
         String country = apiRequestHandler.getStringValue("country");
         String postalCode = apiRequestHandler.getStringValue("postalCode");
-        Set<String> storeAdminIds = apiRequestHandler.getSetValue("storeAdminIds", String.class);
+        Set<String> staffIds = apiRequestHandler.getSetValue("staffIds", String.class);
 
         ApiResponseHandler apiResponseHandler = clientDeskApiService.addStore(clientId, storeType, storeName, contactNo, registrationNo,
-                taxIdentificationId, taxIdentificationNo, address, city, state, country, storeAdminIds, postalCode, email, timezone, operatingHours, currency);
+                taxIdentificationId, taxIdentificationNo, address, city, state, country, staffIds, postalCode, email, timezone, operatingHours, currency);
 
         if (apiResponseHandler.getStatusCode()!=400)
             return new ResponseEntity<>(apiResponseHandler, HttpStatus.BAD_REQUEST);
@@ -142,18 +98,18 @@ public class ClientDeskApiController {
         return new ResponseEntity<>(apiResponseHandler, HttpStatus.CREATED);
     }
 
-    @PostMapping("/get-store-by-store-admin-id")
+    @PostMapping("/get-store-by-staff-id")
     public ResponseEntity<ApiResponseHandler> getStoreByStoreAdminId(@RequestBody ApiRequestHandler apiRequestHandler){
-        String storeAdminId = apiRequestHandler.getStringValue("storeAdminId/userId");
-        if (StringUtils.isEmpty(storeAdminId))
+        String staffId = apiRequestHandler.getStringValue("staffId");
+        if (StringUtils.isEmpty(staffId))
             return new ResponseEntity<>(new ApiResponseHandler("Please provide userID", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
-        ApiResponseHandler storeByStoreAdminId = clientDeskApiService.findStoreByStoreAdminId(storeAdminId);
-        if (storeByStoreAdminId.getStatusCode() == 400)
+        ApiResponseHandler storeBYStaffId = clientDeskApiService.findStoreByStaffId(staffId);
+        if (storeBYStaffId.getStatusCode() == 400)
             return new ResponseEntity<>(new ApiResponseHandler("no store found", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
-        if (storeByStoreAdminId.getStatusCode() == 500)
+        if (storeBYStaffId.getStatusCode() == 500)
             return new ResponseEntity<>(new ApiResponseHandler("Internal server error", null, ResponseStatus.INTERNAL_SERVER_ERROR, ResponseStatusCode.INTERNAL_SERVER_ERROR, true), HttpStatus.INTERNAL_SERVER_ERROR);
 
-        return new ResponseEntity<>(storeByStoreAdminId, HttpStatus.OK);
+        return new ResponseEntity<>(storeBYStaffId, HttpStatus.OK);
     }
 }

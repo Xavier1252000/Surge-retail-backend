@@ -118,4 +118,14 @@ public class MasterApiRepository {
         query.addCriteria(Criteria.where("createdBy").is(createdBy));
         return mongoTemplate.find(query, Roles.class);
     }
+
+    public List<TaxMaster> getTaxMasterByStoreId(String storeId) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("storeIds").is(storeId));
+        return mongoTemplate.find(query, TaxMaster.class);
+    }
+
+    public TaxMaster getTaxMasterById(String taxMasterId) {
+        return mongoTemplate.findById(taxMasterId, TaxMaster.class);
+    }
 }

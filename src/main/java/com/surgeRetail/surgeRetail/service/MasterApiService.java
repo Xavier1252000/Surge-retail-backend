@@ -9,10 +9,12 @@ import com.surgeRetail.surgeRetail.utils.AppUtils;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -82,8 +84,9 @@ public class MasterApiService {
 
 
 //    <------------------------------------------------------ TAX-MASTER ------------------------------------------------------------->
-    public ApiResponseHandler addTaxMaster(String taxType, String taxCode, BigDecimal taxPercentage, String applicableOn, Set<String> applicableStateIds, Set<String> applicableCategories, Boolean inclusion, String description) {
+    public ApiResponseHandler addTaxMaster(List<String> storeIds, String taxType, String taxCode, BigDecimal taxPercentage, String applicableOn, Set<String> applicableStateIds, Set<String> applicableCategories, Boolean inclusion, String description) {
         TaxMaster taxMaster = new TaxMaster();
+        taxMaster.setStoreIds(new HashSet<>(storeIds));
         taxMaster.setTaxCode(taxCode);
         taxMaster.setTaxType(taxType);
         taxMaster.setApplicableOn(applicableOn);
@@ -145,6 +148,14 @@ public class MasterApiService {
         return new ApiResponseHandler("taxMaster updated successfully", node, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
     }
 
+
+    public ApiResponseHandler getTaxMasterByStoreId(String storeId) {
+        List<TaxMaster> taxMasterByStoreId = masterApiRepository.getTaxMasterByStoreId(storeId);
+        return new ApiResponseHandler("Tax masters fetched successfully", taxMasterByStoreId, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
+    }
+
+//    ----------------------------------------------------DISCOUNT MASTER--------------------------------------------------------
+
     public ApiResponseHandler addDiscountMaster(String discountName, BigDecimal discountPercentage, String discountCouponCode, String applicableOn) {
         DiscountMaster discountMaster = new DiscountMaster();
         discountMaster.setDiscountName(discountName);
@@ -205,5 +216,10 @@ public class MasterApiService {
 
     public ApiResponseHandler findRolesByCreatedBy(String createdBy) {
         return new ApiResponseHandler("success", masterApiRepository.findRolesByCreatedBy(createdBy), ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
+    }
+
+    public ApiResponseHandler getTaxMasterById(String taxMasterId) {
+        TaxMaster taxMasterById = masterApiRepository.getTaxMasterById(taxMasterId);
+        return new ApiResponseHandler("Tax master fetched successfully", taxMasterById, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
     }
 }

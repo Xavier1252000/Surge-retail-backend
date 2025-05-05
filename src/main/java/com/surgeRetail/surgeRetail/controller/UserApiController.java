@@ -80,7 +80,6 @@ public class UserApiController {
             return new ResponseEntity<>(new ApiResponseHandler("please provide username", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         Set<String> roles = apiRequestHandler.getSetValue("roles", String.class);
-        System.out.println(roles);
         if (CollectionUtils.isEmpty(roles))
             return new ResponseEntity<>(new ApiResponseHandler("please provide roles", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 

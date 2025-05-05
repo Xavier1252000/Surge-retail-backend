@@ -1,10 +1,14 @@
 package com.surgeRetail.surgeRetail.repository;
 
 import com.surgeRetail.surgeRetail.document.store.Store;
+import com.surgeRetail.surgeRetail.document.userAndRoles.ClientDetails;
+import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public class ClientDeskApiRepository {
@@ -19,9 +23,16 @@ public class ClientDeskApiRepository {
         return mongoTemplate.save(store);
     }
 
-    public Store findStoreByStoreAdminId(String storeAdminId) {
+    public List<Store> findStoreByStoreAdminId(String storeAdminId) {
         Query query = new Query();
         query.addCriteria(Criteria.where("storeAdminIds").is(storeAdminId));
-        return mongoTemplate.findOne(query, Store.class);
+        return mongoTemplate.find(query, Store.class);
+    }
+
+    public ClientDetails findClientByClientId(String clientId) {
+        Query query = new Query();
+        System.out.println(clientId);
+        query.addCriteria(Criteria.where("userId").is(clientId));
+        return mongoTemplate.findOne(query, ClientDetails.class);
     }
 }

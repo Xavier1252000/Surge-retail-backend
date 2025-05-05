@@ -1,6 +1,5 @@
 package com.surgeRetail.surgeRetail.controller;
 
-import com.cloudinary.Api;
 import com.surgeRetail.surgeRetail.document.master.DiscountMaster;
 import com.surgeRetail.surgeRetail.document.master.TaxMaster;
 import com.surgeRetail.surgeRetail.document.master.TimezoneMaster;
@@ -77,6 +76,9 @@ public class MasterApiController {
 
     @PostMapping("/add-tax-master")
     public ApiResponseHandler addTaxMaster(@RequestBody Map<String, Object> requestMap) {
+
+        Object stIds = requestMap.get("storeIds");
+        List<String> storeIds = (List<String>) stIds;
         String taxType = (String) requestMap.get("taxType");
         if (StringUtils.isEmpty(taxType))
             return new ApiResponseHandler("please provide taxType", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
@@ -108,7 +110,7 @@ public class MasterApiController {
         List<String> categoryIds = (List<String>) requestMap.get("applicableCategories");
         Set<String> applicableCategories = new HashSet<>(categoryIds);
 
-        return masterApiService.addTaxMaster(taxType, taxCode, taxPercentage, applicableOn, applicableStateIds, applicableCategories, inclusion, description);
+        return masterApiService.addTaxMaster(storeIds, taxType, taxCode, taxPercentage, applicableOn, applicableStateIds, applicableCategories, inclusion, description);
     }
 
 
@@ -153,6 +155,25 @@ public class MasterApiController {
         Set<String> applicableCategories = new HashSet<>(categoryIds);
 
         return masterApiService.updateTaxMaster(id, taxType, taxCode, taxPercentage, applicableOn, applicableStateIds, applicableCategories, inclusion, description, active);
+    }
+
+
+    @PostMapping("/tax-master-by-store-id")
+    public ResponseEntity<ApiResponseHandler> taxMasterByStoreId(@RequestBody ApiRequestHandler apiRequestHandler){
+        String storeId = apiRequestHandler.getStringValue("storeId");
+        if (StringUtils.isEmpty(storeId))
+            return new ResponseEntity<>(new ApiResponseHandler("please provide storeId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+
+        return new ResponseEntity<>(masterApiService.getTaxMasterByStoreId(storeId), HttpStatus.OK);
+    }
+
+    @PostMapping("/tax-master-by-id")
+    public ResponseEntity<ApiResponseHandler> taxMasterById(@RequestBody ApiRequestHandler apiRequestHandler){
+        String taxMasterId = apiRequestHandler.getStringValue("taxMasterId");
+        if (StringUtils.isEmpty(taxMasterId))
+            return new ResponseEntity<>(new ApiResponseHandler("please provide taxMasterId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+
+        return new ResponseEntity<>(masterApiService.getTaxMasterById(taxMasterId), HttpStatus.OK);
     }
 
 //    <--------------------------------------------------------Discount Master -------------------------------------------------------->

@@ -3,12 +3,14 @@ package com.surgeRetail.surgeRetail.document.userAndRoles;
 import com.surgeRetail.surgeRetail.utils.Auditable;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Document
 public class ClientDetails extends Auditable {
+    @Id
     private String id;
     private String userId;
     private int numericId;   //auto-increment  apart  from the user ids

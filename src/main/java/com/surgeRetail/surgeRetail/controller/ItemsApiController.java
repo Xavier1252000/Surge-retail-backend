@@ -78,7 +78,7 @@ public class ItemsApiController {
         BigDecimal profitToGainInPercentage = null;
         
 
-        String bsPrice = (String) requestMap.get("baseSellingPrice");
+        String bsPrice = String.valueOf(requestMap.get("baseSellingPrice"));
         BigDecimal baseSellingPrice=null;
         
         if (!StringUtils.isEmpty(String.valueOf(profitPercentage)) && !StringUtils.isEmpty(bsPrice) || StringUtils.isEmpty(String.valueOf(profitPercentage)) && StringUtils.isEmpty(bsPrice))      // checking both baseSellingPrice and profitToGainInPercentage should not be present

@@ -98,6 +98,7 @@ public class UserApiService {
         if (user.getRoles().contains(User.USER_ROLE_CLIENT)) {
             ClientDetails client = new ClientDetails();
             client.setUserId(user.getId());
+            client.setId(user.getId());
             client.onCreate();
             ClientDetails clientWithHighestNumId = userApiRepository.getClientWithHighestNumId();
             client.setNumericId(clientWithHighestNumId == null ? 0 : clientWithHighestNumId.getNumericId() + 1);
@@ -126,7 +127,7 @@ public class UserApiService {
 
         ClientDetails cd = userApiRepository.findClientByUserId(userId);
 
-        cd.setUserId(userId);
+        cd.setId(userId);
         cd.setDisplayName(displayName);
         cd.setSecondaryEmail(secondaryEmail);
         cd.setAlternateContactNo(alternateContactNo);

@@ -1,12 +1,14 @@
 package com.surgeRetail.surgeRetail.service;
 
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.surgeRetail.surgeRetail.document.store.OperatingHours;
 import com.surgeRetail.surgeRetail.document.store.Store;
+import com.surgeRetail.surgeRetail.document.userAndRoles.ClientDetails;
 import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import com.surgeRetail.surgeRetail.repository.ClientDeskApiRepository;
 import com.surgeRetail.surgeRetail.repository.ConfidentialApiRepository;
@@ -20,6 +22,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -41,50 +44,13 @@ public class ClientDeskApiService {
     }
 
 
-
-    public ApiResponseHandler registerUserWithCustomRoles(String firstName, String lastName, String emailId, String mobileNo, String username, String password, Set<String>roles, String superAdminSecret, String clientSecret) {
-
-        User customUser = new User();
-        customUser.setFirstName(firstName);
-        customUser.setLastName(lastName);
-        customUser.setUsername(username);
-        customUser.setEmailId(emailId);
-        customUser.setMobileNo(mobileNo);
-        customUser.setPassword(password);
-        customUser.setRoles(roles);
-        customUser.setCreatedOn(Instant.now());
-        customUser.setModifiedOn(Instant.now());
-        UserDetailsImpl principal = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        customUser.setCreatedBy(principal.getId());
-        customUser.setModifiedBy(principal.getId());
-        customUser.setActive(true);
-
-        publicApiRepository.save(customUser);
-
-        ObjectNode node = objectMapper.createObjectNode();
-        node.put("firstName", customUser.getFirstName());
-        node.put("lastName", customUser.getLastName());
-        node.put("username", customUser.getUsername());
-        node.put("emailId", customUser.getEmailId());
-        node.put("mobileNo", customUser.getMobileNo());
-        node.put("password", customUser.getPassword()); // Consider encrypting before saving
-        node.set("roles", objectMapper.valueToTree(customUser.getRoles()));
-        node.put("createdOn", customUser.getCreatedOn().toString());
-        node.put("modifiedOn", customUser.getModifiedOn().toString());
-        node.put("createdBy", customUser.getCreatedBy());
-        node.put("modifiedBy", customUser.getModifiedBy());
-        node.put("active", customUser.isActive());
-        return new ApiResponseHandler("registered with role"+"  ", null, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
-    }
-
-
-    public ApiResponseHandler addStore(String clientId, String storeType, String storeName, String contactNo, String registrationNo, String taxIdentificationId, String taxIdentificationNo, String address, String city, String state, String country, Set<String> storeAdminIds, String pinCode, String email, String timezone, Set<OperatingHours> operatingHours, String currency) {
+    public ApiResponseHandler addStore(String clientId, String storeType, String storeName, String contactNo, String registrationNo, String taxIdentificationId, String taxIdentificationNo, String address, String city, String state, String country, Set<String> staffIds, String pinCode, String email, String timezone, Set<OperatingHours> operatingHours, String currency) {
 
         objectMapper.registerModule(new JavaTimeModule());
 
 //      in case clientId is externally provided by super-admin, not taken from SecurityContextHolder when client is creating store
-        User client = publicApiRepository.findUserByUserId(clientId);
-        if (client == null)
+        ClientDetails cd = cdRepository.findClientByClientId(clientId);
+        if (cd == null)
             return new ApiResponseHandler("no client found by provided clientId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
         Store store = new Store();
@@ -103,13 +69,14 @@ public class ClientDeskApiService {
         store.setPostalCode(pinCode);
         store.setState(state);
         store.setCountry(country);
-        store.setStoreAdminIds(storeAdminIds);
+        store.setStaffIds(staffIds);
         store.setCurrency(currency);
         store.onCreate();
 
         Store savedStore = cdRepository.saveStore(store);
         ObjectNode node  = objectMapper.createObjectNode();
         node.put("id", savedStore.getId());
+        node.put("clientId", savedStore.getClientId());
         node.put("store_Name", savedStore.getStoreName());
         node.put("storeContactNo", savedStore.getContactNo());
         node.put("registrationNo", savedStore.getRegistrationNo());
@@ -129,16 +96,11 @@ public class ClientDeskApiService {
         return new ApiResponseHandler("store created successfully!!!", node, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
     }
 
-    public ApiResponseHandler findStoreByStoreAdminId(String storeAdminId) {
-        Store storeByStoreAdminId = cdRepository.findStoreByStoreAdminId(storeAdminId);
-        if (storeByStoreAdminId==null)
-            return new ApiResponseHandler("No store found for user", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-        ObjectNode node = objectMapper.createObjectNode();
-        try {
-            node = AppUtils.mapObjectToObjectNode(storeByStoreAdminId);
-        } catch (IllegalAccessException e) {
-            return new ApiResponseHandler("internal server error", null, ResponseStatus.INTERNAL_SERVER_ERROR, ResponseStatusCode.INTERNAL_SERVER_ERROR, true);
-        }
-        return new ApiResponseHandler("Store fetched successfully", node, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
+    public ApiResponseHandler findStoreByStaffId(String staffId) {
+        List<Store> storeByStaffId = cdRepository.findStoreByStoreAdminId(staffId);
+        if (storeByStaffId==null)
+            return new ApiResponseHandler("No store found for staff", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        return new ApiResponseHandler("Store fetched successfully", storeByStaffId, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
     }
 }
