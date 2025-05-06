@@ -1,5 +1,7 @@
 package com.surgeRetail.surgeRetail.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.surgeRetail.surgeRetail.document.Item.Item;
 import com.surgeRetail.surgeRetail.document.Item.ItemImageInfo;
@@ -16,6 +18,8 @@ import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,17 +35,19 @@ public class ItemsApiService {
     private final ItemsApiRepository itemsApiRepository;
     private final MasterApiRepository masterApiRepository;
     private final ImageUploadService imageUploadService;
+    private final ObjectMapper objectMapper;
 
     public ItemsApiService(ItemsApiRepository itemsApiRepository,
                            MasterApiRepository masterApiRepository,
-                           ImageUploadService imageUploadService){
+                           ImageUploadService imageUploadService,
+                           ObjectMapper objectMapper){
         this.itemsApiRepository = itemsApiRepository;
         this.masterApiRepository = masterApiRepository;
         this.imageUploadService = imageUploadService;
+        this.objectMapper = objectMapper;
     }
     public ApiResponseHandler addItemToStore(Item item) {
 
-        System.out.println(item.getStoreId());
         String storeId = item.getStoreId();
         if(!itemsApiRepository.isStoreExistsById(storeId))
             return new ApiResponseHandler("store not exists with providedId",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
@@ -169,5 +175,25 @@ public class ItemsApiService {
     public ApiResponseHandler getItemById(String itemId) {
         Item itemById = itemsApiRepository.getItemById(itemId);
         return new ApiResponseHandler("Item fetched successfully", itemById, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+    }
+
+    public ResponseEntity<ApiResponseHandler> getItemsByStoreId(Integer index, Integer itemPerIndex, String storeId) {
+        Map<String, Object> itemsByStoreId = itemsApiRepository.getItemsByStoreId(index, itemPerIndex, storeId);
+        ObjectNode root = objectMapper.createObjectNode();
+
+        ArrayNode itemsArray = objectMapper.createArrayNode();
+        Object items = itemsByStoreId.get("items");
+        if (items instanceof List<?> itemsList && itemsList.stream().allMatch(item -> item instanceof Item)){
+            itemsList.forEach(item -> itemsArray.add(objectMapper.valueToTree(item)));
+            root.set("items", itemsArray);
+        }
+        Integer count = Integer.parseInt(String.valueOf(itemsByStoreId.get("count")));
+        root.put("totalItems", count);
+
+        if (index != null && itemPerIndex != null) {
+            root.put("totalPages", count % itemPerIndex==0? count/itemPerIndex : count/itemPerIndex+1 );
+        }
+
+        return new ResponseEntity<>(new ApiResponseHandler("items fetched successfully", root, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false), HttpStatus.OK);
     }
 }

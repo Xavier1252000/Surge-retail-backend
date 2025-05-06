@@ -18,7 +18,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -352,8 +351,20 @@ public class ItemsApiController {
         return itemsApiService.findLowStockItemsInStore(storeId);
     }
 
-    @PostMapping("get-items-with-filters")
-    public ApiResponseHandler getItemsWithFilters(@RequestBody ApiRequestHandler apiRequestHandler){
-        return null;
+    @PostMapping("get-items-by-store-id")
+    public ResponseEntity<ApiResponseHandler> getItemsByStoreId(@RequestBody ApiRequestHandler apiRequestHandler){
+        String storeId = apiRequestHandler.getStringValue("storeId");
+        if (StringUtils.isEmpty(storeId))
+            return new ResponseEntity<>(new ApiResponseHandler("please provide storeId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+
+        Integer index = apiRequestHandler.getIntegerValue("index");
+        Integer itemPerIndex = apiRequestHandler.getIntegerValue("itemPerIndex");
+
+        if (index !=null && itemPerIndex !=null){
+            if (index < 0 || itemPerIndex < 1)
+                return new ResponseEntity<>(new ApiResponseHandler("please provide valid values for index and itemPerIndex", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+        }
+
+        return itemsApiService.getItemsByStoreId(index, itemPerIndex, storeId);
     }
 }

@@ -141,7 +141,7 @@ public class ApiRequestHandler {
         try {
             return Integer.parseInt(value.toString());
         }catch (NumberFormatException e){
-            return null;
+            throw new NumberFormatException("Invalid Integer value for "+key+": " + value);
         }
     }
 
@@ -162,7 +162,7 @@ public class ApiRequestHandler {
         try {
             return Long.parseLong(value.toString());
         }catch (NumberFormatException e){
-            return null;
+            throw new NumberFormatException("Invalid Integer value for "+key+": " + value);
         }
     }
 

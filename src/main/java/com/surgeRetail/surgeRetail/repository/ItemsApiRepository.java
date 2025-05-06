@@ -3,12 +3,15 @@ package com.surgeRetail.surgeRetail.repository;
 import com.surgeRetail.surgeRetail.document.Item.Item;
 import com.surgeRetail.surgeRetail.document.Item.ItemImageInfo;
 import com.surgeRetail.surgeRetail.document.store.Store;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class ItemsApiRepository {
@@ -55,5 +58,22 @@ public class ItemsApiRepository {
 
     public boolean isStoreExistsById(String storeId) {
         return mongoTemplate.exists(new Query(Criteria.where("id").is(storeId)), Store.class);
+    }
+
+    public Map<String, Object> getItemsByStoreId(Integer index, Integer itemPerIndex, String storeId) {
+        Query query = new Query();
+        Criteria criteria = Criteria.where("storeId").is(storeId);
+        query.addCriteria(criteria);
+
+        long count = mongoTemplate.count(query, Item.class); //must be calculated before pagination is applied
+
+        if (index != null && itemPerIndex != null)
+            query.with(PageRequest.of(index, itemPerIndex));
+
+        Map<String, Object> responseMap = new HashMap<>();
+        List<Item> items = mongoTemplate.find(query, Item.class);
+        responseMap.put("items", items);
+        responseMap.put("count", count);
+        return responseMap;
     }
 }

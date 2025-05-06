@@ -47,7 +47,7 @@ public class ClientDeskApiController {
     private ResponseEntity<ApiResponseHandler> addStore(@RequestBody ApiRequestHandler apiRequestHandler){
         UserDetailsImpl userDetails = (UserDetailsImpl) (SecurityContextHolder.getContext().getAuthentication()).getPrincipal();
         String clientId = null;
-        if (userDetails!=null || userDetails.getUser().getRoles().contains(User.USER_ROLE_CLIENT)){
+        if (userDetails!=null && userDetails.getUser().getRoles().contains(User.USER_ROLE_CLIENT) && !userDetails.getUser().getRoles().contains(User.USER_ROLE_SUPER_ADMIN)){
             clientId = userDetails.getUser().getId();
         }
 
