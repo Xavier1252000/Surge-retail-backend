@@ -151,7 +151,6 @@ public class ItemsApiController {
         List<String> tutLinks = (List<String>) requestMap.get("tutorialLinks");
         Set<String> tutorialLinks = CollectionUtils.isEmpty(tutLinks)?null:new HashSet(tutLinks);
 
-        String skuCode = (String) requestMap.get("skuCode");
         String barcode = (String) requestMap.get("barcode");
 
         Boolean isReturnable = (Boolean) requestMap.get("isReturnable");
@@ -197,7 +196,6 @@ public class ItemsApiController {
         item.setItemStock(itemStock);
         item.setStockThreshold(stockThreshold);
         item.setTutorialLinks(tutorialLinks);
-        item.setSkuCode(skuCode);
         item.setBarcode(barcode);
         item.setStockUnit(stockUnit);
         item.setIsReturnable(isReturnable);
@@ -292,7 +290,6 @@ public class ItemsApiController {
 
         Set<String> tutorialLinks = apiRequestHandler.getSetValue("tutorialLinks", String.class);
 
-        String skuCode = apiRequestHandler.getStringValue("skuCode");
         String barcode = apiRequestHandler.getStringValue("barcode");
 
         Boolean isReturnable = apiRequestHandler.getBooleanValue("isReturnable");
@@ -322,7 +319,6 @@ public class ItemsApiController {
         item.setItemStock(itemStock);
         item.setStockThreshold(stockThreshold);
         item.setTutorialLinks(tutorialLinks);
-        item.setSkuCode(skuCode);
         item.setBarcode(barcode);
         item.setStockUnit(stockUnit);
         item.setIsReturnable(isReturnable);

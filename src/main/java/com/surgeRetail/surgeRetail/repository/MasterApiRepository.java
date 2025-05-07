@@ -60,6 +60,10 @@ public class MasterApiRepository {
     public UnitMaster saveUnitMaster(UnitMaster unitMaster) {
         return mongoTemplate.save(unitMaster);
     }
+
+    public List<UnitMaster> getAllUnitMaster() {
+        return mongoTemplate.findAll(UnitMaster.class);
+    }
     
     public List<DiscountMaster> findActiveInvoiceDiscounts(String couponCode){
         Query query = new Query();
@@ -127,5 +131,11 @@ public class MasterApiRepository {
 
     public TaxMaster getTaxMasterById(String taxMasterId) {
         return mongoTemplate.findById(taxMasterId, TaxMaster.class);
+    }
+
+    public List<DiscountMaster> getDiscountMastersByStoreId(List<String> storeIds) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("storeIds").in(storeIds));
+        return mongoTemplate.find(query, DiscountMaster.class);
     }
 }

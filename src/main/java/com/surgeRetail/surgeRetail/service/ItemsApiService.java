@@ -52,6 +52,13 @@ public class ItemsApiService {
         if(!itemsApiRepository.isStoreExistsById(storeId))
             return new ApiResponseHandler("store not exists with providedId",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
+
+        Item itemByStoreAndGreatestSku = itemsApiRepository.getItemByStoreAndGreatestSku(storeId);
+        if (itemByStoreAndGreatestSku != null && itemByStoreAndGreatestSku.getSkuCode() != null) {
+            item.setSkuCode(itemByStoreAndGreatestSku.getSkuCode() + 1);
+        }else {
+            item.setSkuCode(1);
+        }
 //        Setting profit percentage or profitMargin with the help of other one
         if (item.getProfitToGainInPercentage() != null) {
             BigDecimal profitMargin = item.getProfitToGainInPercentage()

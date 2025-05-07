@@ -4,6 +4,7 @@ import com.surgeRetail.surgeRetail.document.Item.Item;
 import com.surgeRetail.surgeRetail.document.Item.ItemImageInfo;
 import com.surgeRetail.surgeRetail.document.store.Store;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -75,5 +76,13 @@ public class ItemsApiRepository {
         responseMap.put("items", items);
         responseMap.put("count", count);
         return responseMap;
+    }
+
+    public Item getItemByStoreAndGreatestSku(String storeId) {
+        Query query = new Query();
+        Criteria criteria = Criteria.where("storeId").is(storeId);
+        query.addCriteria(criteria);
+        query.with(Sort.by(Sort.Direction.DESC, "skuCode")).limit(1);
+        return mongoTemplate.findOne(query, Item.class);
     }
 }

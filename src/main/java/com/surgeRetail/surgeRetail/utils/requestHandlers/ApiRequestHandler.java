@@ -2,10 +2,10 @@ package com.surgeRetail.surgeRetail.utils.requestHandlers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.io.BigDecimalParser;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.surgeRetail.surgeRetail.excpetionHandlers.CustomExceptions;
 import io.micrometer.common.util.StringUtils;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -242,11 +242,12 @@ public class ApiRequestHandler {
             return null;
 
         try {
+            objectMapper.registerModule(new JavaTimeModule());
             return objectMapper.readValue(objectMapper.writeValueAsString(value), objectMapper.getTypeFactory().constructCollectionType(List.class, clazz));
         } catch (JsonMappingException e) {
             throw new RuntimeException(e);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new CustomExceptions("Invalid List value for "+key+": " + value + " of type " + value.getClass().getName() + " cannot be converted to List<" + clazz.getName() + ">");
         }
     }
 
@@ -266,10 +267,8 @@ public class ApiRequestHandler {
             objectMapper.registerModule(new JavaTimeModule());
 
             return objectMapper.readValue(objectMapper.writeValueAsString(value), objectMapper.getTypeFactory().constructCollectionType(Set.class, clazz));
-        } catch (JsonMappingException e) {
-            throw new RuntimeException(e);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new CustomExceptions("Invalid Set value for "+key+": " + value + " of type " + value.getClass().getName() + " cannot be converted to Set<" + clazz.getName() + ">");
         }
     }
 

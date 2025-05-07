@@ -11,6 +11,7 @@ import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
 import io.micrometer.common.util.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -205,6 +206,16 @@ public class MasterApiController {
         return masterApiService.addDiscountMaster(discountName, discountPercentage, discountCouponCode, applicableOn);
     }
 
+    @PostMapping("/get-discount-master")
+    public ResponseEntity<ApiResponseHandler> getDiscountMaster(@RequestBody ApiRequestHandler apiRequestHandler){
+        List<String> storeIds = apiRequestHandler.getListValue("storeIds", String.class);
+        System.out.println(storeIds);
+        if (CollectionUtils.isEmpty(storeIds))
+            return new ResponseEntity<>(new ApiResponseHandler("please provide storeIds", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+
+        return masterApiService.getDiscountMasters(storeIds);
+    }
+
 
 //    <------------------------------------------------UnitMaster------------------------------------------------------->
     @PostMapping("/add-unit-master")
@@ -219,6 +230,11 @@ public class MasterApiController {
             return new ApiResponseHandler("please provide unit", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
         }
         return masterApiService.addUnit(unit, unitNotation);
+    }
+
+    @GetMapping("/get-all-unit-master")
+    public ResponseEntity<ApiResponseHandler> getAllUnitMaster(){
+        return new ResponseEntity<>(masterApiService.getAllUnitMaster(), HttpStatus.OK);
     }
 
 

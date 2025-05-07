@@ -9,7 +9,8 @@ import com.surgeRetail.surgeRetail.utils.AppUtils;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
-import org.springframework.http.HttpStatusCode;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -167,11 +168,22 @@ public class MasterApiService {
         return new ApiResponseHandler("discount master saved successfully!!!", savedDiscountMaster, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
     }
 
+    public ResponseEntity<ApiResponseHandler> getDiscountMasters(List<String> storeIds) {
+        return new ResponseEntity<>(new ApiResponseHandler("discount master fetched successfully", masterApiRepository.getDiscountMastersByStoreId(storeIds), ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false), HttpStatus.OK);
+    }
+
+//    --------------------------------------------------Unit master--------------------------------------------------
+
     public ApiResponseHandler addUnit(String unit, String unitNotation) {
         UnitMaster unitMaster = new UnitMaster();
         unitMaster.setUnit(unit);
         unitMaster.setUnitNotation(unitNotation);
         return new ApiResponseHandler("now you can add item with measurement in: "+unit, masterApiRepository.saveUnitMaster(unitMaster), ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
+    }
+
+    public ApiResponseHandler getAllUnitMaster() {
+        return new ApiResponseHandler("Units fetched successfully",masterApiRepository.getAllUnitMaster(), ResponseStatus.SUCCESS, ResponseStatusCode
+                .SUCCESS, false);
     }
 
     @Transactional

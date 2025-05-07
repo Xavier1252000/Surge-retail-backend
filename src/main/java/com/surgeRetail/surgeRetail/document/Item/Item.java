@@ -11,7 +11,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.Period;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
@@ -22,6 +21,7 @@ public class Item extends Auditable implements Serializable {
     private String id;
     private String storeId;
     private String itemName;
+    private Integer skuCode; // Stock Keeping Unit (Unique identifier for inventory)
     private BigDecimal costPrice; // Purchase price from supplier
     private BigDecimal profitToGainInPercentage;  // will define a base selling price
     private BigDecimal baseSellingPrice; // Base selling price (cost price + personal profit for seller)
@@ -41,7 +41,6 @@ public class Item extends Auditable implements Serializable {
     private Float itemStock; // Available stock count
     private Float stockThreshold; // Minimum stock before restocking is required+
     private Set<String> tutorialLinks; // Links to guides or tutorials
-    private String skuCode; // Stock Keeping Unit (Unique identifier for inventory)
     private String barcode; // Barcode or QR code for scanning
     private String stockUnit; // Unit of measurement (e.g., "kg", "pcs", "liters")
     private Integer thresholdQuantityForAddTax;  //some taxes are applicable for buying or selling more than n no of units, this field will hold that quantity after that the tax will be applicable
