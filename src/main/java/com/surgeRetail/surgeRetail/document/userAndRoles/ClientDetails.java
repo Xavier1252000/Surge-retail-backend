@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class ClientDetails extends Auditable {
     @Id
     private String id;
-    private String userId;
+    private String userId;    //client id, User with role client
     private int numericId;   //auto-increment  apart  from the user ids
     private String displayName;
     private String secondaryEmail;

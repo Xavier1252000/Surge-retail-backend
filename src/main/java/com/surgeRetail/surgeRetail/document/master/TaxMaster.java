@@ -23,12 +23,12 @@ public class TaxMaster extends Auditable {
     private String taxType; // GST, VAT, etc.
     private BigDecimal taxPercentage; // Stores tax in decimal (e.g., 18.00 for 18%)
     private String applicableOn; // Item, total bill, etc
-    private Set<String> applicableStateIds = new HashSet<>(); // If applicable only to a particular state
     private Set<String> applicableCategories = new HashSet<>();
-    private Boolean inclusionOnBasePrice;  // whether tax is included on base price or will be applicable over base price;
+    private boolean inclusionOnBasePrice;  // whether tax is included on base price or will be applicable over base price;
     private String description; // Additional details about the tax
 
     public final static String APPLICABLE_ON_ITEM = "Item";
+    public final static String APPLICABLE_ON_CATEGORY = "Category";
     public final static String APPLICABLE_ON_INVOICE = "Invoice";
     public final static String APPLICABLE_ON_STORE = "Store";
     public final static String APPLICABLE_OVER_SPECIFIC_QUANTITY = "Over Specific Quantity";

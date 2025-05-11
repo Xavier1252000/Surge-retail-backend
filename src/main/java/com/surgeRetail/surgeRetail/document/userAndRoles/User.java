@@ -31,6 +31,7 @@ public class User {
     public static final String USER_ROLE_CASHIER = "CASHIER";
     public static final String USER_ROLE_MANAGEMENT = "MANAGEMENT";
     public static final String USER_ROLE_MARKETING = "MARKETING";
+    public static final String USER_ROLE_STAFF = "STAFF";
     public static final String USER_ROLE_STORE_ADMIN = "STORE ADMIN";
     public static final String USER_ROLE_CLIENT = "CLIENT";
     public static final String USER_ROLE_SUPER_ADMIN = "SUPER ADMIN";

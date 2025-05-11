@@ -1,8 +1,6 @@
 package com.surgeRetail.surgeRetail.repository;
 
-import com.surgeRetail.surgeRetail.document.master.RoleMaster;
 import com.surgeRetail.surgeRetail.document.store.Store;
-import com.surgeRetail.surgeRetail.document.userAndRoles.ClientDetails;
 import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -38,10 +36,6 @@ public class ConfidentialApiRepository {
 
     public List<Store> getStoreByStoreAdminId(String storeAdminId) {
         return mongoTemplate.find(new Query(Criteria.where("storeAdminId").is(storeAdminId)), Store.class);
-    }
-
-    public RoleMaster saveRoleMaster(RoleMaster roleMaster) {
-        return mongoTemplate.save(roleMaster);
     }
 
     public List<User> getAllUsers(Integer index, Integer itemPerIndex, List<String> userIds, List<String> roles, Boolean active, Instant fromDate, Instant toDate) {

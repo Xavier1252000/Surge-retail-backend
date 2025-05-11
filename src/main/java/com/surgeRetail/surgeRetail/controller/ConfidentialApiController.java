@@ -30,16 +30,6 @@ public class ConfidentialApiController {
         this.confidentialApiService = confidentialApiService;
     }
 
-    @PostMapping("/create-roles")
-    public ApiResponseHandler createRoles(@RequestBody ApiRequestHandler apiRequestHandler){
-        String role = apiRequestHandler.getStringValue("role");
-        if (StringUtils.isEmpty(role))
-            return new ApiResponseHandler("please provide role", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-
-        String description = apiRequestHandler.getStringValue("description");
-        return confidentialApiService.createRole(role, description);
-    }
-
     @PostMapping("/register-user")
     public ApiResponseHandler registerUser(@RequestBody Map<String, Object> requestMap){
         String firstName = (String) requestMap.get("firstName");

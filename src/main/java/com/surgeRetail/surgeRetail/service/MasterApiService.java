@@ -9,6 +9,7 @@ import com.surgeRetail.surgeRetail.utils.AppUtils;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
+import io.micrometer.common.util.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -85,14 +86,19 @@ public class MasterApiService {
 
 
 //    <------------------------------------------------------ TAX-MASTER ------------------------------------------------------------->
-    public ApiResponseHandler addTaxMaster(List<String> storeIds, String taxType, String taxCode, BigDecimal taxPercentage, String applicableOn, Set<String> applicableStateIds, Set<String> applicableCategories, Boolean inclusion, String description) {
+    public ApiResponseHandler addTaxMaster(List<String> storeIds, String taxType, String taxCode, BigDecimal taxPercentage, String applicableOn, Set<String> applicableCategories, Boolean inclusion, String description) {
+
+        HashSet<String> storeIdsSet = new HashSet<>(storeIds);
+        if (!masterApiRepository.storeIdValidationCheck(storeIdsSet))
+            return new ApiResponseHandler("please provide only valid storeIds", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+
         TaxMaster taxMaster = new TaxMaster();
         taxMaster.setStoreIds(new HashSet<>(storeIds));
         taxMaster.setTaxCode(taxCode);
         taxMaster.setTaxType(taxType);
         taxMaster.setApplicableOn(applicableOn);
         taxMaster.setTaxPercentage(taxPercentage);
-        taxMaster.setApplicableStateIds(applicableStateIds);
         taxMaster.setApplicableCategories(applicableCategories);
         taxMaster.setInclusionOnBasePrice(inclusion);
         taxMaster.setDescription(description);
@@ -106,7 +112,6 @@ public class MasterApiService {
         node.put("applicableOn",tm.getApplicableOn());
         node.put("taxPercentage",tm.getTaxPercentage());
         node.put("description", description);
-        node.set("applicableStateIds",objectMapper.valueToTree(tm.getApplicableStateIds()));
         node.set("applicableCategories", objectMapper.valueToTree(tm.getApplicableCategories()));
         node.put("createdOn",String.valueOf(tm.getCreatedOn()));
         node.put("modifiedOn", String.valueOf(tm.getModifiedOn()));
@@ -125,7 +130,6 @@ public class MasterApiService {
         taxMaster.setTaxType(taxType);
         taxMaster.setApplicableOn(applicableOn);
         taxMaster.setTaxPercentage(taxPercentage);
-        taxMaster.setApplicableStateIds(applicableStateIds);
         taxMaster.setApplicableCategories(applicableCategories);
         taxMaster.setInclusionOnBasePrice(inclusion);
         taxMaster.setDescription(description);
@@ -140,7 +144,6 @@ public class MasterApiService {
         node.put("applicableOn",tm.getApplicableOn());
         node.put("taxPercentage",tm.getTaxPercentage());
         node.put("description", description);
-        node.set("applicableStateIds",objectMapper.valueToTree(tm.getApplicableStateIds()));
         node.set("applicableCategories", objectMapper.valueToTree(tm.getApplicableCategories()));
         node.put("createdOn",String.valueOf(tm.getCreatedOn()));
         node.put("modifiedOn", String.valueOf(tm.getModifiedOn()));
@@ -217,9 +220,12 @@ public class MasterApiService {
         return new ApiResponseHandler("countryMaster fetched successfully", root, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
     }
 
-    public ApiResponseHandler createRole(String roleName, String roleTypee) {
+    public ApiResponseHandler createRole(String id, String roleName, String roleTypee, Set<String> canBeAssignedBy) {
         Roles role = new Roles();
+        if (StringUtils.isEmpty(id))
+            role.setId(id);
         role.setRole(roleName);
+        role.setCanBeAssignedBy(canBeAssignedBy);
         role.setRoleType(roleTypee);
         role.onCreate();
 

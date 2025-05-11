@@ -80,6 +80,9 @@ public class MasterApiController {
 
         Object stIds = requestMap.get("storeIds");
         List<String> storeIds = (List<String>) stIds;
+
+        if (CollectionUtils.isEmpty(storeIds))
+            return new ApiResponseHandler("please provide storeIds", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
         String taxType = (String) requestMap.get("taxType");
         if (StringUtils.isEmpty(taxType))
             return new ApiResponseHandler("please provide taxType", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
@@ -101,17 +104,15 @@ public class MasterApiController {
             return new ApiResponseHandler("please provide applicableOn", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
         Boolean inclusion = (Boolean) requestMap.get("inclusionOnBasePrice");
-        if (StringUtils.isEmpty(applicableOn))
+        if (inclusion == null)
             return new ApiResponseHandler("please provide inclusionOnBasePrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
         String description = (String) requestMap.get("description");
-        List<String> stateIds = (List<String>) requestMap.get("applicableStateIds");
-        Set<String> applicableStateIds = new HashSet<>(stateIds);
 
         List<String> categoryIds = (List<String>) requestMap.get("applicableCategories");
         Set<String> applicableCategories = new HashSet<>(categoryIds);
 
-        return masterApiService.addTaxMaster(storeIds, taxType, taxCode, taxPercentage, applicableOn, applicableStateIds, applicableCategories, inclusion, description);
+        return masterApiService.addTaxMaster(storeIds, taxType, taxCode, taxPercentage, applicableOn, applicableCategories, inclusion, description);
     }
 
 
@@ -285,15 +286,24 @@ public class MasterApiController {
 //    --------------------------------------Roles--------------------------------------
     @PostMapping("/create-role")
     public ResponseEntity<ApiResponseHandler> createRole(@RequestBody ApiRequestHandler apiRequestHandler){
+        String id = apiRequestHandler.getStringValue("id");
         String role = apiRequestHandler.getStringValue("roleName");
         if (StringUtils.isEmpty(role))
             return new ResponseEntity<>(new ApiResponseHandler("please provide roleName", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
-        String roleTypee = apiRequestHandler.getStringValue("roleType");
-        if (StringUtils.isEmpty(roleTypee))
+        String roleType = apiRequestHandler.getStringValue("roleType");
+        if (StringUtils.isEmpty(roleType))
             return new ResponseEntity<>(new ApiResponseHandler("please provide roleType, can be Primary or Custom", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
-        return new ResponseEntity<>(masterApiService.createRole(role, roleTypee), HttpStatus.CREATED);
+        Set<String> canBeAssignedBy = apiRequestHandler.getSetValue("canBeAssignedBy", String.class);
+        if (CollectionUtils.isEmpty(canBeAssignedBy))
+            return new ResponseEntity<>(new ApiResponseHandler("please provide canBeAssignedBy", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+
+        ApiResponseHandler response = masterApiService.createRole(id, role, roleType, canBeAssignedBy);
+        if (response.getStatusCode() != 201 || response.getStatusCode() != 200)
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PostMapping("get-roles")

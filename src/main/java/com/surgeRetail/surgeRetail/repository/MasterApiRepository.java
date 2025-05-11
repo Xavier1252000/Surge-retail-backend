@@ -1,6 +1,7 @@
 package com.surgeRetail.surgeRetail.repository;
 
 import com.surgeRetail.surgeRetail.document.master.*;
+import com.surgeRetail.surgeRetail.document.store.Store;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import io.micrometer.common.util.StringUtils;
 import org.springframework.boot.autoconfigure.graphql.data.GraphQlQueryByExampleAutoConfiguration;
@@ -9,6 +10,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashSet;
 import java.util.IllegalFormatCodePointException;
 import java.util.List;
 import java.util.Set;
@@ -137,5 +139,14 @@ public class MasterApiRepository {
         Query query = new Query();
         query.addCriteria(Criteria.where("storeIds").in(storeIds));
         return mongoTemplate.find(query, DiscountMaster.class);
+    }
+
+    public boolean storeIdValidationCheck(HashSet<String> storeIds) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("id").in(storeIds));
+        long count = mongoTemplate.count(query, Store.class);
+        if (storeIds.size() == count)
+            return true;
+        return false;
     }
 }
