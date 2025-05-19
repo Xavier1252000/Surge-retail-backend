@@ -50,7 +50,6 @@ public class ClientDeskApiService {
 
 //      in case clientId is externally provided by super-admin, not taken from SecurityContextHolder when client is creating store
         ClientDetails cd = cdRepository.findClientByClientId(clientId);
-        System.out.println(clientId);
         if (cd == null)
             return new ApiResponseHandler("no client found by provided clientId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
@@ -98,7 +97,7 @@ public class ClientDeskApiService {
     }
 
     public ApiResponseHandler findStoreByStaffId(String staffId) {
-        List<Store> storeByStaffId = cdRepository.findStoreByStoreAdminId(staffId);
+        List<Store> storeByStaffId = cdRepository.findStoreByStaffId(staffId);
         if (storeByStaffId==null)
             return new ApiResponseHandler("No store found for staff", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 

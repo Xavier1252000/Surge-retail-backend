@@ -23,15 +23,14 @@ public class ClientDeskApiRepository {
         return mongoTemplate.save(store);
     }
 
-    public List<Store> findStoreByStoreAdminId(String storeAdminId) {
+    public List<Store> findStoreByStaffId(String storeAdminId) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("storeAdminIds").is(storeAdminId));
+        query.addCriteria(Criteria.where("staffIds").is(storeAdminId));
         return mongoTemplate.find(query, Store.class);
     }
 
     public ClientDetails findClientByClientId(String clientId) {
         Query query = new Query();
-        System.out.println(clientId);
         query.addCriteria(Criteria.where("userId").is(clientId));
         return mongoTemplate.findOne(query, ClientDetails.class);
     }

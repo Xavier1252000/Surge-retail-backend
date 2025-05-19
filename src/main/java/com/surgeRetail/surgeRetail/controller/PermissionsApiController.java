@@ -39,7 +39,6 @@ public class PermissionsApiController {
         if(StringUtils.isEmpty(userId))
             return new ApiResponseHandler("please provide userId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
         List<ModulePermissions> modulePermissionsList = apiRequestHandler.getListValue("modulesPermissions", ModulePermissions.class);
-        System.out.println(modulePermissionsList);
 
         if(CollectionUtils.isEmpty(modulePermissionsList))
             return new ApiResponseHandler("Please provide module permissions", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);

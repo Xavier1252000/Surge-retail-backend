@@ -80,7 +80,6 @@ public class EmailServiceImpl implements EmailService{
         try {
             javaMailSender.send(mimeMessage);
         }catch (Exception e){
-            System.out.println(2+"   "+e);
         }
 
         return "Mail sent successfully!";

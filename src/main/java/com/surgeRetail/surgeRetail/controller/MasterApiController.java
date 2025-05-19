@@ -210,7 +210,6 @@ public class MasterApiController {
     @PostMapping("/get-discount-master")
     public ResponseEntity<ApiResponseHandler> getDiscountMaster(@RequestBody ApiRequestHandler apiRequestHandler){
         List<String> storeIds = apiRequestHandler.getListValue("storeIds", String.class);
-        System.out.println(storeIds);
         if (CollectionUtils.isEmpty(storeIds))
             return new ResponseEntity<>(new ApiResponseHandler("please provide storeIds", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 

@@ -24,7 +24,6 @@ public class UserApiRepository {
             Query query = new Query();
             query.addCriteria(Criteria.where("role").is(s));
             if (!mongoTemplate.exists(query, Roles.class)) {
-                System.out.println(false);
                 return false;
             }
         }

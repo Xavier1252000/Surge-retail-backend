@@ -124,38 +124,6 @@ public class ConfidentialApiService {
         return new ApiResponseHandler("client registered successfully", node, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
     }
 
-
-    public ApiResponseHandler registerSuperUser(String firstName, String lastName, String username, String emailId, String mobileNo, String password, String superAdminSecret) {
-
-        User user = new User();
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setEmailId(emailId);
-        user.setMobileNo(mobileNo);
-        user.setUsername(username);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setActive(true);
-        user.setCreatedOn(Instant.now());
-        user.setModifiedOn(Instant.now());
-
-        Set<String> roles = new HashSet<>();
-        roles.add(User.USER_ROLE_SUPER_ADMIN);
-
-        user.setRoles(roles);
-
-        User savedUser = publicApiRepository.save(user);
-
-        HashMap<Object, Object> responseMap = new HashMap<>();
-        responseMap.put("id", user.getId());
-        responseMap.put("firstName", user.getFirstName());
-        responseMap.put("lastName", user.getLastName());
-        responseMap.put("username", user.getUsername());
-        responseMap.put("emailId", user.getEmailId());
-        responseMap.put("createdOn", user.getCreatedOn());
-
-        return new ApiResponseHandler("superAdmin registered",responseMap, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
-    }
-
     public ApiResponseHandler registerUserWithCustomRoles(String firstName, String lastName, String emailId, String mobileNo, String username, String password, String superAdminSecret, String clientSecret) {
         return new ApiResponseHandler("customUser created successfully!!!", null, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
     }
