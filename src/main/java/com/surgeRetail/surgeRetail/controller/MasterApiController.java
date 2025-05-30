@@ -76,41 +76,47 @@ public class MasterApiController {
 //    <------------------------------------------------------ TAX-MASTER ------------------------------------------------------------->
 
     @PostMapping("/add-tax-master")
-    public ApiResponseHandler addTaxMaster(@RequestBody Map<String, Object> requestMap) {
+    public ApiResponseHandler addTaxMaster(@RequestBody ApiRequestHandler apiRequestHandler) {
 
-        Object stIds = requestMap.get("storeIds");
-        List<String> storeIds = (List<String>) stIds;
+        List<String> storeIds = apiRequestHandler.getListValue("storeIds", String.class);
 
         if (CollectionUtils.isEmpty(storeIds))
             return new ApiResponseHandler("please provide storeIds", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-        String taxType = (String) requestMap.get("taxType");
+        String taxType = apiRequestHandler.getStringValue("taxType");
         if (StringUtils.isEmpty(taxType))
             return new ApiResponseHandler("please provide taxType", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
-        String taxCode = (String) requestMap.get("taxCode");
+        String taxCode = apiRequestHandler.getStringValue("taxCode");
         if (StringUtils.isEmpty(taxCode))
             return new ApiResponseHandler("please provide taxCode", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
-        String taxPercentageString = (String) requestMap.get("taxPercentage");
-        BigDecimal taxPercentage;
-        try {
-            taxPercentage = new BigDecimal(taxPercentageString);
-        } catch (Exception e) {
+        BigDecimal taxPercentage = apiRequestHandler.getBigDecimalValue("taxPercentage");
+        if(taxPercentage == null){
             return new ApiResponseHandler("please provide taxPercentage", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
         }
 
-        String applicableOn = (String) requestMap.get("applicableOn");
+        String applicableOn = apiRequestHandler.getStringValue("applicableOn");
         if (StringUtils.isEmpty(applicableOn))
             return new ApiResponseHandler("please provide applicableOn", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
-        Boolean inclusion = (Boolean) requestMap.get("inclusionOnBasePrice");
+        if (!applicableOn.equals(TaxMaster.APPLICABLE_ON_ITEM) && !applicableOn.equals(TaxMaster.APPLICABLE_ON_INVOICE)
+                && !applicableOn.equals(TaxMaster.APPLICABLE_ON_CATEGORY) && !applicableOn.equals(TaxMaster.APPLICABLE_ON_STORE)){
+            return new ApiResponseHandler("please provide applicableOn valid values are "+ TaxMaster.APPLICABLE_ON_ITEM+", "+ TaxMaster.APPLICABLE_ON_INVOICE
+                    +", " +TaxMaster.APPLICABLE_ON_CATEGORY+", "+TaxMaster.APPLICABLE_ON_STORE, null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        }
+
+        Boolean inclusion = apiRequestHandler.getBooleanValue("inclusionOnBasePrice");
         if (inclusion == null)
             return new ApiResponseHandler("please provide inclusionOnBasePrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
-        String description = (String) requestMap.get("description");
+        String description = apiRequestHandler.getStringValue("description");
 
-        List<String> categoryIds = (List<String>) requestMap.get("applicableCategories");
-        Set<String> applicableCategories = new HashSet<>(categoryIds);
+        Set<String> applicableCategories = apiRequestHandler.getSetValue("applicableCategories", String.class);
+        if (applicableOn.equals(TaxMaster.APPLICABLE_ON_CATEGORY) && CollectionUtils.isEmpty(applicableCategories))
+            return new ApiResponseHandler("please provide applicable categories", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        if (!applicableOn.equals(TaxMaster.APPLICABLE_ON_CATEGORY) && !CollectionUtils.isEmpty(applicableCategories))
+            return new ApiResponseHandler("Category is needed only when applicableOn is category", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
         return masterApiService.addTaxMaster(storeIds, taxType, taxCode, taxPercentage, applicableOn, applicableCategories, inclusion, description);
     }

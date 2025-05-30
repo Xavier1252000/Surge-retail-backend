@@ -93,6 +93,9 @@ public class MasterApiService {
             return new ApiResponseHandler("please provide only valid storeIds", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
 
 
+        if (masterApiRepository.taxMasterExistByTaxCode(taxCode))
+            return new ApiResponseHandler("TaxMaster already exist with provided taxCode", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
         TaxMaster taxMaster = new TaxMaster();
         taxMaster.setStoreIds(new HashSet<>(storeIds));
         taxMaster.setTaxCode(taxCode);

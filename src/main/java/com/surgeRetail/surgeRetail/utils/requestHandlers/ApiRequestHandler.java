@@ -90,7 +90,7 @@ public class ApiRequestHandler {
         if (data==null || StringUtils.isEmpty(key))
             return null;
         BigDecimal bigDecimal = null;
-        Object value = data.get("key");
+        Object value = data.get(key);
         if (value!=null) {
             if (value instanceof BigDecimal)
                 return (BigDecimal) value;

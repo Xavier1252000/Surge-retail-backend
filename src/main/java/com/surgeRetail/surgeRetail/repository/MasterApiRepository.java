@@ -135,6 +135,10 @@ public class MasterApiRepository {
         return mongoTemplate.findById(taxMasterId, TaxMaster.class);
     }
 
+    public boolean taxMasterExistByTaxCode(String taxCode) {
+        return mongoTemplate.exists(new Query(Criteria.where("taxCode").is(taxCode)), TaxMaster.class);
+    }
+
     public List<DiscountMaster> getDiscountMastersByStoreId(List<String> storeIds) {
         Query query = new Query();
         query.addCriteria(Criteria.where("storeIds").in(storeIds));
