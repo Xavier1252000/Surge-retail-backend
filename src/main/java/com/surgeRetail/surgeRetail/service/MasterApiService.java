@@ -32,15 +32,24 @@ public class MasterApiService {
         this.objectMapper = objectMapper;
     }
 
-    public ApiResponseHandler addItemCategory(String categoryName, String description, String parentCategoryId) {
-        ItemsCategoryMaster icm = new ItemsCategoryMaster();
-        icm.setCategoryName(categoryName);
-        icm.setDescription(description);
-        icm.setParentCategoryId(parentCategoryId);
-        icm.onCreate();
+    public ApiResponseHandler addItemCategory(String categoryName, String description, String parentCategoryId, List<String> storeIds) {
 
-        ItemsCategoryMaster itemsCategoryMaster = masterApiRepository.addItemCategory(icm);
-        return new ApiResponseHandler("Category added successfully!!", itemsCategoryMaster, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
+        ItemsCategoryMaster icm = masterApiRepository.findCategoryByName(categoryName);
+       if (icm != null){
+           icm.getStoreIds().addAll(new HashSet<>(storeIds));
+           icm.onUpdate();
+           masterApiRepository.addItemCategory(icm);
+       }else {
+           icm = new ItemsCategoryMaster();
+           icm.setCategoryName(categoryName);
+           icm.setDescription(description);
+           icm.setParentCategoryId(parentCategoryId);
+           icm.setStoreIds(new HashSet<>(storeIds));
+           icm.onCreate();
+           masterApiRepository.addItemCategory(icm);
+       }
+
+        return new ApiResponseHandler("Category added successfully!!", icm, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
     }
 
     public ApiResponseHandler updateItemCategoryMaster(String categoryId, String categoryName, String description, String parentCategoryId) {
@@ -64,22 +73,16 @@ public class MasterApiService {
 
     }
 
-    public ApiResponseHandler getAllItemCategoryMaster() {
-        List<ItemsCategoryMaster> icmList = masterApiRepository.getAllItemCategoryMaster();
+    public ApiResponseHandler getAllItemCategoryMaster(List<String> storeIds) {
+        List<ItemsCategoryMaster> icmList = masterApiRepository.getAllItemCategoryMaster(storeIds);
         ArrayNode arrayNode = objectMapper.createArrayNode();
         icmList.forEach(e->{
-            try {
-                arrayNode.add(AppUtils.mapObjectToObjectNode(e));
-            } catch (IllegalAccessException ex) {
-                throw new RuntimeException(ex);
-            }
-
-//            ObjectNode node = objectMapper.createObjectNode();
-//            node.put("id", e.getId());
-//            node.put("categoryName", e.getCategoryName());
-//            node.put("parentCategoryId", e.getParentCategoryId()!=null?e.getParentCategoryId():null);
-//            node.put("description", e.getDescription());
-//            arrayNode.add(node);
+            ObjectNode node = objectMapper.createObjectNode();
+            node.put("id", e.getId());
+            node.put("categoryName", e.getCategoryName());
+            node.put("parentCategoryId", e.getParentCategoryId()!=null?e.getParentCategoryId():null);
+            node.put("description", e.getDescription());
+            arrayNode.add(node);
         });
         return new ApiResponseHandler("All itemCategories", arrayNode, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
     }
@@ -124,10 +127,10 @@ public class MasterApiService {
     }
 
 
-    public ApiResponseHandler updateTaxMaster(String taxMasterId, String taxType, String taxCode, BigDecimal taxPercentage, String applicableOn, Set<String> applicableStateIds, Set<String> applicableCategories, Boolean inclusion, String description, Boolean active) {
+    public ResponseEntity<ApiResponseHandler> updateTaxMaster(String taxMasterId, String taxType, String taxCode, BigDecimal taxPercentage, String applicableOn, Set<String> applicableCategories, Boolean inclusion, String description, Boolean active) {
         TaxMaster taxMaster = masterApiRepository.findTaxMasterById(taxMasterId);
         if (taxMaster==null)
-            return new ApiResponseHandler("taxMaster not exist with providedId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("taxMaster not exist with providedId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         taxMaster.setTaxCode(taxCode);
         taxMaster.setTaxType(taxType);
@@ -152,13 +155,23 @@ public class MasterApiService {
         node.put("modifiedOn", String.valueOf(tm.getModifiedOn()));
         node.put("createdBy",tm.getCreatedBy());
         node.put("active", tm.getActive());
-        return new ApiResponseHandler("taxMaster updated successfully", node, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
+        return new ResponseEntity<>(new ApiResponseHandler("taxMaster updated successfully", node, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false), HttpStatus.OK);
     }
 
 
     public ApiResponseHandler getTaxMasterByStoreId(String storeId) {
         List<TaxMaster> taxMasterByStoreId = masterApiRepository.getTaxMasterByStoreId(storeId);
         return new ApiResponseHandler("Tax masters fetched successfully", taxMasterByStoreId, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
+    }
+
+    public ApiResponseHandler getTaxMasterById(String taxMasterId) {
+        TaxMaster taxMasterById = masterApiRepository.getTaxMasterById(taxMasterId);
+        return new ApiResponseHandler("Tax master fetched successfully", taxMasterById, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
+    }
+
+    public ResponseEntity<ApiResponseHandler> deleteTaxMasterById(String taxMasterId) {
+        masterApiRepository.deleteTaxMasterById(taxMasterId);
+        return new ResponseEntity<>(new ApiResponseHandler("tax master deleted successfully", null, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false), HttpStatus.OK);
     }
 
 //    ----------------------------------------------------DISCOUNT MASTER--------------------------------------------------------
@@ -180,15 +193,18 @@ public class MasterApiService {
 
 //    --------------------------------------------------Unit master--------------------------------------------------
 
-    public ApiResponseHandler addUnit(String unit, String unitNotation) {
+    public ApiResponseHandler addUnit(String unit, String unitNotation, List<String> storeIds) {
+        if (masterApiRepository.unitExistByName(unit, storeIds))
+            return new ApiResponseHandler("unit already exists", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
         UnitMaster unitMaster = new UnitMaster();
         unitMaster.setUnit(unit);
         unitMaster.setUnitNotation(unitNotation);
+        unitMaster.setStoreIds(new HashSet<>(storeIds));
         return new ApiResponseHandler("now you can add item with measurement in: "+unit, masterApiRepository.saveUnitMaster(unitMaster), ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
     }
 
-    public ApiResponseHandler getAllUnitMaster() {
-        return new ApiResponseHandler("Units fetched successfully",masterApiRepository.getAllUnitMaster(), ResponseStatus.SUCCESS, ResponseStatusCode
+    public ApiResponseHandler getAllUnitMaster(List<String> storeIds) {
+        return new ApiResponseHandler("Units fetched successfully",masterApiRepository.getAllUnitMaster(storeIds), ResponseStatus.SUCCESS, ResponseStatusCode
                 .SUCCESS, false);
     }
 
@@ -237,10 +253,5 @@ public class MasterApiService {
 
     public ApiResponseHandler findRolesByCreatedBy(String createdBy) {
         return new ApiResponseHandler("success", masterApiRepository.findRolesByCreatedBy(createdBy), ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
-    }
-
-    public ApiResponseHandler getTaxMasterById(String taxMasterId) {
-        TaxMaster taxMasterById = masterApiRepository.getTaxMasterById(taxMasterId);
-        return new ApiResponseHandler("Tax master fetched successfully", taxMasterById, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
     }
 }

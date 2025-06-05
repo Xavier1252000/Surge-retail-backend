@@ -31,8 +31,8 @@ public class MasterApiRepository {
         return mongoTemplate.findAndRemove(new Query(Criteria.where("id").is(categoryId)), ItemsCategoryMaster.class);
     }
 
-    public List<ItemsCategoryMaster> getAllItemCategoryMaster() {
-        return mongoTemplate.findAll(ItemsCategoryMaster.class);
+    public List<ItemsCategoryMaster> getAllItemCategoryMaster(List<String> storeIds) {
+        return mongoTemplate.find(new Query(Criteria.where("storeIds").in(storeIds)), ItemsCategoryMaster.class);
     }
 
     public ItemsCategoryMaster findItemCategoryMasterById(String categoryId) {
@@ -63,8 +63,8 @@ public class MasterApiRepository {
         return mongoTemplate.save(unitMaster);
     }
 
-    public List<UnitMaster> getAllUnitMaster() {
-        return mongoTemplate.findAll(UnitMaster.class);
+    public List<UnitMaster> getAllUnitMaster(List<String> storeIds) {
+        return mongoTemplate.find(new Query(Criteria.where("storeIds").in(storeIds)), UnitMaster.class);
     }
     
     public List<DiscountMaster> findActiveInvoiceDiscounts(String couponCode){
@@ -135,6 +135,10 @@ public class MasterApiRepository {
         return mongoTemplate.findById(taxMasterId, TaxMaster.class);
     }
 
+    public void deleteTaxMasterById(String taxMasterId) {
+        mongoTemplate.remove(new Query(Criteria.where("id").is(taxMasterId)), TaxMaster.class);
+    }
+
     public boolean taxMasterExistByTaxCode(String taxCode) {
         return mongoTemplate.exists(new Query(Criteria.where("taxCode").is(taxCode)), TaxMaster.class);
     }
@@ -152,5 +156,13 @@ public class MasterApiRepository {
         if (storeIds.size() == count)
             return true;
         return false;
+    }
+
+    public boolean unitExistByName(String unit, List<String> storeIds) {
+        return mongoTemplate.exists(new Query(Criteria.where("unit").is(unit).and("storeIds").in(storeIds)), UnitMaster.class);
+    }
+
+    public ItemsCategoryMaster findCategoryByName(String categoryName) {
+        return mongoTemplate.findOne(new Query(Criteria.where("categoryName").is(categoryName)), ItemsCategoryMaster.class);
     }
 }

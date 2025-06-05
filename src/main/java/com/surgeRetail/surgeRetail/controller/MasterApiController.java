@@ -29,16 +29,23 @@ public class MasterApiController {
     }
 
     @PostMapping("/add-item-category-master")
-    public ApiResponseHandler addItemCategoryMaster(@RequestBody Map<String, Object> requestMap) {
-        String categoryName = (String) requestMap.get("categoryName");
+    public ResponseEntity<ApiResponseHandler> addItemCategoryMaster(@RequestBody ApiRequestHandler apiRequestHandler) {
+        String categoryName = apiRequestHandler.getStringValue("categoryName");
         if (StringUtils.isEmpty(categoryName))
-            return new ApiResponseHandler("please provide itemCategoryName", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide itemCategoryName", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
-        String description = (String) requestMap.get("description");
+        String description = apiRequestHandler.getStringValue("description");
 
-        String parentCategoryId = (String) requestMap.get("parentCategoryId");
+        List<String> storeIds = apiRequestHandler.getListValue("storeIds", String.class);
+        if (CollectionUtils.isEmpty(storeIds))
+            return new ResponseEntity<>(new ApiResponseHandler("please provide storeIds", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
-        return masterApiService.addItemCategory(categoryName, description, parentCategoryId);
+        String parentCategoryId = apiRequestHandler.getStringValue("parentCategoryId");
+
+        ApiResponseHandler apiResponseHandler = masterApiService.addItemCategory(categoryName, description, parentCategoryId, storeIds);
+        if (apiResponseHandler.getStatusCode() != 201)
+            return new ResponseEntity<>(apiResponseHandler, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(apiResponseHandler, HttpStatus.CREATED);
     }
 
     @PostMapping("/update-item-category-master")
@@ -67,9 +74,10 @@ public class MasterApiController {
         return masterApiService.deleteItemCategory(categoryId);
     }
 
-    @GetMapping("/get-all-item-category-master")
-    public ApiResponseHandler getAllItemCategory() {
-        return masterApiService.getAllItemCategoryMaster();
+    @PostMapping("/get-all-item-category-master")
+    public ApiResponseHandler getAllItemCategory(@RequestBody ApiRequestHandler apiRequestHandler) {
+        List<String> storeIds = apiRequestHandler.getListValue("storeIds", String.class);
+        return masterApiService.getAllItemCategoryMaster(storeIds);
     }
 
 
@@ -123,46 +131,57 @@ public class MasterApiController {
 
 
     @PostMapping("/update-tax-master")
-    public ApiResponseHandler update(@RequestBody Map<String, Object> requestMap) {
+    public ResponseEntity<ApiResponseHandler> update(@RequestBody ApiRequestHandler apiRequestHandler) {
 
-        String id = (String) requestMap.get("id");
-        if (StringUtils.isEmpty(id))
-            return new ApiResponseHandler("please provide id", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        String taxMasterId = apiRequestHandler.getStringValue("id");
+        if(StringUtils.isEmpty(taxMasterId))
+            return new ResponseEntity<>(new ApiResponseHandler("please provide id", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
-        String taxType = (String) requestMap.get("taxType");
+        List<String> storeIds = apiRequestHandler.getListValue("storeIds", String.class);
+
+        if (CollectionUtils.isEmpty(storeIds))
+            return new ResponseEntity<>(new ApiResponseHandler("please provide storeIds", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+        String taxType = apiRequestHandler.getStringValue("taxType");
         if (StringUtils.isEmpty(taxType))
-            return new ApiResponseHandler("please provide taxType", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide taxType", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
-        String taxCode = (String) requestMap.get("taxCode");
+        String taxCode = apiRequestHandler.getStringValue("taxCode");
         if (StringUtils.isEmpty(taxCode))
-            return new ApiResponseHandler("please provide taxCode", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide taxCode", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
-        String taxPercentageString = (String) requestMap.get("taxPercentage");
-        BigDecimal taxPercentage;
-        try {
-            taxPercentage = new BigDecimal(taxPercentageString);
-        } catch (Exception e) {
-            return new ApiResponseHandler("please provide taxPercentage", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        BigDecimal taxPercentage = apiRequestHandler.getBigDecimalValue("taxPercentage");
+        if(taxPercentage == null){
+            return new ResponseEntity<>(new ApiResponseHandler("please provide taxPercentage", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
         }
 
-        String applicableOn = (String) requestMap.get("applicableOn");
-        if (StringUtils.isEmpty(applicableOn) || (!applicableOn.equals(TaxMaster.APPLICABLE_ON_ITEM) && !applicableOn.equals(TaxMaster.APPLICABLE_ON_INVOICE)))
-            return new ApiResponseHandler("please select applicable on, "+TaxMaster.APPLICABLE_ON_ITEM + " or " + TaxMaster.APPLICABLE_ON_INVOICE , null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-
-        Boolean inclusion = (Boolean) requestMap.get("inclusionOnBasePrice");
+        String applicableOn = apiRequestHandler.getStringValue("applicableOn");
         if (StringUtils.isEmpty(applicableOn))
-            return new ApiResponseHandler("please provide inclusionOnBasePrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide applicableOn", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
-        Boolean active = (Boolean) requestMap.get("active");
+        if (!applicableOn.equals(TaxMaster.APPLICABLE_ON_ITEM) && !applicableOn.equals(TaxMaster.APPLICABLE_ON_INVOICE)
+                && !applicableOn.equals(TaxMaster.APPLICABLE_ON_CATEGORY) && !applicableOn.equals(TaxMaster.APPLICABLE_ON_STORE)){
+            return new ResponseEntity<>(new ApiResponseHandler("please provide applicableOn valid values are "+ TaxMaster.APPLICABLE_ON_ITEM+", "+ TaxMaster.APPLICABLE_ON_INVOICE
+                    +", " +TaxMaster.APPLICABLE_ON_CATEGORY+", "+TaxMaster.APPLICABLE_ON_STORE, null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+        }
 
-        String description = (String) requestMap.get("description");
-        List<String> stateIds = (List<String>) requestMap.get("applicableStateIds");
-        Set<String> applicableStateIds = new HashSet<>(stateIds);
+        Boolean inclusion = apiRequestHandler.getBooleanValue("inclusionOnBasePrice");
+        if (inclusion == null)
+            return new ResponseEntity<>(new ApiResponseHandler("please provide inclusionOnBasePrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
-        List<String> categoryIds = (List<String>) requestMap.get("applicableCategories");
-        Set<String> applicableCategories = new HashSet<>(categoryIds);
+        String description = apiRequestHandler.getStringValue("description");
 
-        return masterApiService.updateTaxMaster(id, taxType, taxCode, taxPercentage, applicableOn, applicableStateIds, applicableCategories, inclusion, description, active);
+        Set<String> applicableCategories = apiRequestHandler.getSetValue("applicableCategories", String.class);
+        if (applicableOn.equals(TaxMaster.APPLICABLE_ON_CATEGORY) && CollectionUtils.isEmpty(applicableCategories))
+            return new ResponseEntity<>(new ApiResponseHandler("please provide applicable categories", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+
+        if (!applicableOn.equals(TaxMaster.APPLICABLE_ON_CATEGORY) && !CollectionUtils.isEmpty(applicableCategories))
+            return new ResponseEntity<>(new ApiResponseHandler("Category is needed only when applicableOn is category", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+
+        Boolean active = apiRequestHandler.getBooleanValue("active");
+        if (active == null)
+            return new ResponseEntity<>(new ApiResponseHandler("Please provide active status", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+
+        return masterApiService.updateTaxMaster(taxMasterId, taxType, taxCode, taxPercentage, applicableOn, applicableCategories, inclusion, description, active);
     }
 
 
@@ -184,6 +203,14 @@ public class MasterApiController {
         return new ResponseEntity<>(masterApiService.getTaxMasterById(taxMasterId), HttpStatus.OK);
     }
 
+    @PostMapping("/delete-tax-master-by-id")
+    public ResponseEntity<ApiResponseHandler> deleteTaxMasterById(@RequestBody ApiRequestHandler apiRequestHandler){
+        String taxMasterId = apiRequestHandler.getStringValue("id");
+        if (StringUtils.isEmpty(taxMasterId))
+            return new ResponseEntity<>(new ApiResponseHandler("please provide id", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+
+        return masterApiService.deleteTaxMasterById(taxMasterId);
+    }
 //    <--------------------------------------------------------Discount Master -------------------------------------------------------->
 
     @PostMapping("/add-discount-master")
@@ -225,22 +252,32 @@ public class MasterApiController {
 
 //    <------------------------------------------------UnitMaster------------------------------------------------------->
     @PostMapping("/add-unit-master")
-    public ApiResponseHandler addUnit(@RequestBody Map<String, Object> requestMap){
+    public ResponseEntity<ApiResponseHandler> addUnit(@RequestBody Map<String, Object> requestMap){
         String unit = (String) requestMap.get("unitFullForm");
         if(StringUtils.isEmpty(unit)){
-            return new ApiResponseHandler("please provide unit", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide unit", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
         }
 
         String unitNotation = (String) requestMap.get("unitNotation");
         if(StringUtils.isEmpty(unit)){
-            return new ApiResponseHandler("please provide unit", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide unit", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
         }
-        return masterApiService.addUnit(unit, unitNotation);
+
+        List<String> storeIds = (List<String>) requestMap.get("storeIds");
+        if (CollectionUtils.isEmpty(storeIds))
+            return new ResponseEntity<>(new ApiResponseHandler("please provide storeIds", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+
+        ApiResponseHandler apiResponseHandler = masterApiService.addUnit(unit, unitNotation, storeIds);
+        if (apiResponseHandler.getStatusCode() != 201)
+            return new ResponseEntity<>(apiResponseHandler, HttpStatus.BAD_REQUEST);
+
+        return new ResponseEntity<>(apiResponseHandler, HttpStatus.CREATED);
     }
 
-    @GetMapping("/get-all-unit-master")
-    public ResponseEntity<ApiResponseHandler> getAllUnitMaster(){
-        return new ResponseEntity<>(masterApiService.getAllUnitMaster(), HttpStatus.OK);
+    @PostMapping("/get-all-unit-master")
+    public ResponseEntity<ApiResponseHandler> getAllUnitMaster(@RequestBody ApiRequestHandler apiRequestHandler){
+        List<String> storeIds = apiRequestHandler.getListValue("storeIds", String.class);
+        return new ResponseEntity<>(masterApiService.getAllUnitMaster(storeIds), HttpStatus.OK);
     }
 
 

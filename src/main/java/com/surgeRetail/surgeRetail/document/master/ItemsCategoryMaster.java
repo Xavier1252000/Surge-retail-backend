@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.util.Set;
 
 @EqualsAndHashCode(callSuper = false)
 @Document
@@ -14,6 +15,7 @@ import java.time.Instant;
 public class ItemsCategoryMaster extends Auditable {
 
     private String id;
+    private Set<String> storeIds;
     private String categoryName;
     private String parentCategoryId;
     private String description;
