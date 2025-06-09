@@ -67,11 +67,13 @@ public class MasterApiController {
     }
 
     @PostMapping("/delete-item-category")
-    public ApiResponseHandler deleteCategory(@RequestBody Map<String, Object> requestMap) {
-        String categoryId = (String) requestMap.get("categoryId");
+    public ApiResponseHandler deleteCategory(@RequestBody ApiRequestHandler apiRequestHandler) {
+        String categoryId = apiRequestHandler.getStringValue("categoryId");
         if (StringUtils.isEmpty(categoryId))
             return new ApiResponseHandler("please provide categoryId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-        return masterApiService.deleteItemCategory(categoryId);
+
+        Set<String> storeIds = apiRequestHandler.getSetValue("storeIds", String.class);
+        return masterApiService.deleteItemCategory(categoryId, storeIds);
     }
 
     @PostMapping("/get-all-item-category-master")

@@ -9,7 +9,8 @@ import com.surgeRetail.surgeRetail.utils.requestHandlers.ApiRequestHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
-import io.micrometer.common.util.StringUtils;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,145 +40,93 @@ public class ItemsApiController {
     }
 
     @PostMapping("/add-items-to-store")
-    public ApiResponseHandler addItemsToStore(@RequestBody Map<String, Object> requestMap){
+    public ResponseEntity<ApiResponseHandler> addItemsToStore(@RequestBody ApiRequestHandler apiRequestHandler){
+        System.out.println(apiRequestHandler);
 
-        String storeId = null;
-
-        // if item is registered by storeAdmin, no need to manually provide storeId
-        UserDetailsImpl principal = (UserDetailsImpl) (SecurityContextHolder.getContext().getAuthentication()).getPrincipal();
-        if (principal.getUser().getRoles().contains(User.USER_ROLE_STORE_ADMIN)){
-            if (principal.getStores().size()==1)   //storeAdmin must have only one store
-                storeId = principal.getStores().get(0).getId();
-        }
+//        // if item is registered by storeAdmin, no need to manually provide storeId
+//        UserDetailsImpl principal = (UserDetailsImpl) (SecurityContextHolder.getContext().getAuthentication()).getPrincipal();
+//        if (principal.getUser().getRoles().contains(User.USER_ROLE_STORE_ADMIN)){
+//            if (principal.getStores().size()==1)   //storeAdmin must have only one store
+//                storeId = principal.getStores().get(0).getId();
+//        }
 
         //  if user is not a store admin, and client or some other authoritative is trying to add item, we have to manually provide the storeId
+        String storeId = apiRequestHandler.getStringValue("storeId");
         if (StringUtils.isEmpty(storeId))
-            storeId = (String) requestMap.get("storeId");
+            return new ResponseEntity<>(new ApiResponseHandler("Please provide storeId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
-        if (StringUtils.isEmpty(storeId))
-            return new ApiResponseHandler("please provide storeId",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-
-        String itemName = (String) requestMap.get("itemName");
+        String itemName = apiRequestHandler.getStringValue("itemName");
         if (StringUtils.isEmpty(itemName))
-            return new ApiResponseHandler("please provide itemName",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide itemName",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
-        Object cp = requestMap.get("costPrice");
-        BigDecimal costPrice;
-        if (cp instanceof BigDecimal) {
-            costPrice = (BigDecimal) cp;
-        }else {
-            try {
-                costPrice = new BigDecimal(String.valueOf(cp));
-            } catch (Exception e) {
-                return new ApiResponseHandler("please provide costPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-            }
-        }
+        BigDecimal costPrice = apiRequestHandler.getBigDecimalValue("costPrice");
 
-        Object profitPercentage = requestMap.get("profitToGainInPercentage");
-        BigDecimal profitToGainInPercentage = null;
+        BigDecimal profitToGainInPercentage = apiRequestHandler.getBigDecimalValue("profitToGainInPercentage");
+
+        BigDecimal baseSellingPrice = apiRequestHandler.getBigDecimalValue("baseSellingPrice");
+
+        System.out.println(profitToGainInPercentage +"   "+baseSellingPrice);
         
+        if ((profitToGainInPercentage != null && baseSellingPrice != null) || (profitToGainInPercentage == null && baseSellingPrice == null))      // checking both baseSellingPrice and profitToGainInPercentage should not be present
+            return new ResponseEntity<>(new ApiResponseHandler("please provide any one profitToGainInPercentage or baseSellingPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
-        String bsPrice = String.valueOf(requestMap.get("baseSellingPrice"));
-        BigDecimal baseSellingPrice=null;
-        
-        if (!StringUtils.isEmpty(String.valueOf(profitPercentage)) && !StringUtils.isEmpty(bsPrice) || StringUtils.isEmpty(String.valueOf(profitPercentage)) && StringUtils.isEmpty(bsPrice))      // checking both baseSellingPrice and profitToGainInPercentage should not be present
-            return new ApiResponseHandler("please provide any one profitToGainInPercentage or baseSellingPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-        
-        if (!StringUtils.isEmpty(String.valueOf(profitPercentage))){
-            try {
-                profitToGainInPercentage = new BigDecimal(String.valueOf(profitPercentage));
-            }catch (Exception e){
-                return new ApiResponseHandler("please provide valid values in profitToGainInPercentage", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-            }
-        }
 
-        if (!StringUtils.isEmpty(bsPrice)){
-            try {
-                baseSellingPrice = new BigDecimal(bsPrice);
-            }catch (Exception e){
-                return new ApiResponseHandler("please provide valid values in baseSellingPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-            }
-        }
+        BigDecimal additionalPrice = apiRequestHandler.getBigDecimalValue("additionalPrice");
 
-        Object addPrice = requestMap.get("additionalPrice");
-        BigDecimal additionalPrice;
-        try {
-            additionalPrice = new BigDecimal(String.valueOf(addPrice));
-        }catch (Exception e){
-            return new ApiResponseHandler("please provide additionalPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-        }
-
-        String stockUnit = (String)requestMap.get("stockUnit");
+        String stockUnit = apiRequestHandler.getStringValue("stockUnit");
         if (StringUtils.isEmpty(stockUnit))
-            return new ApiResponseHandler("please provide stockUnit",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide stockUnit",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
-        List<String> appTaxes = (ArrayList<String>) requestMap.get("applicableTaxes");
-        Set<String> applicableTaxes = CollectionUtils.isEmpty(appTaxes)?null: new HashSet<>(appTaxes);
+        Set<String> appTaxes = apiRequestHandler.getSetValue("applicableTaxes", String.class);
+        Set<String> applicableTaxes = CollectionUtils.isEmpty(appTaxes)?new HashSet<>(): appTaxes;
 
 
-        List<String> dmIds = (List<String>) requestMap.get("discountMasterIds");
-        Set<String> discountMasterIds = CollectionUtils.isEmpty(dmIds)?null:new HashSet<>(dmIds);
+        Set<String> dmIds = apiRequestHandler.getSetValue("discountMasterIds", String.class);
+        Set<String> discountMasterIds = CollectionUtils.isEmpty(dmIds)?new HashSet<>():dmIds;
 
-        String brand = (String) requestMap.get("brand");
+        String brand = apiRequestHandler.getStringValue("brand");
 
-        List<String> catIds = (List<String>) requestMap.get("categoryIds");
-        Set<String> categoryIds = CollectionUtils.isEmpty(catIds)? null: new HashSet<>(catIds);
+        Set<String> catIds = apiRequestHandler.getSetValue("categoryIds", String.class);
+        Set<String> categoryIds = CollectionUtils.isEmpty(catIds)? new HashSet<>(): catIds;
 
-        String supplierId = (String)requestMap.get("supplierId");
+        String supplierId = apiRequestHandler.getStringValue("supplierId");
 
-        String description = (String) requestMap.get("description");
+        String description = ("description");
 
-        List<String> imageInfoIds = (List<String>)requestMap.get("itemImageInfoIds");
-        List<String> itemImageInfoIds = CollectionUtils.isEmpty(imageInfoIds)?null:new ArrayList<>(imageInfoIds);
+        List<String> imageInfoIds = apiRequestHandler.getListValue("itemImageInfoIds", String.class);
+        List<String> itemImageInfoIds = CollectionUtils.isEmpty(imageInfoIds)?new ArrayList<>():imageInfoIds;
 
-        Object stock = requestMap.get("itemStock");
-        Float itemStock = null;
-        try {
-            itemStock = Float.parseFloat(String.valueOf(stock));
-        }catch (Exception e){
-            return new ApiResponseHandler("please provide valid values in itemStock can be integer or decimal", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        Float itemStock = apiRequestHandler.getFloatValue("itemStock");
+        if (itemStock == null || itemStock < 1)
+            return new ResponseEntity<>(new ApiResponseHandler("please provide item stock", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+
+
+        Float stockThreshold = apiRequestHandler.getFloatValue("stockThreshold");
+
+
+        Set<String> tutLinks = apiRequestHandler.getSetValue("tutorialLinks", String.class);
+        Set<String> tutorialLinks = CollectionUtils.isEmpty(tutLinks)?new HashSet<>():tutLinks;
+
+        String barcode = apiRequestHandler.getStringValue("barcode");
+
+        Boolean isReturnable = apiRequestHandler.getBooleanValue("isReturnable");
+        if (isReturnable == null)
+            isReturnable = false;
+
+        Boolean isWarrantyAvailable = apiRequestHandler.getBooleanValue("isWarrantyAvailable");
+        Period period = null;
+        if (isWarrantyAvailable) {
+            Integer warrantyYears = apiRequestHandler.getIntegerValue("warrantyPeriodYears");
+
+            Integer warrantyMonths = apiRequestHandler.getIntegerValue("warrantyPeriodMonths");
+
+            Integer warrantyDays = apiRequestHandler.getIntegerValue("warrantyPeriodDays");
+
+            period = Period.of(warrantyYears==null?0:warrantyYears, warrantyMonths==null?0:warrantyMonths, warrantyDays==null?0:warrantyDays);
         }
 
 
-        Object sThreshold = requestMap.get("stockThreshold");
-        Float stockThreshold = null;
-        try {
-            stockThreshold = Float.parseFloat(String.valueOf(sThreshold));
-        }catch (Exception e){
-            return new ApiResponseHandler("please provide valid values in stockThreshold can be integer or decimal", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-        }
-
-
-        List<String> tutLinks = (List<String>) requestMap.get("tutorialLinks");
-        Set<String> tutorialLinks = CollectionUtils.isEmpty(tutLinks)?null:new HashSet(tutLinks);
-
-        String barcode = (String) requestMap.get("barcode");
-
-        Boolean isReturnable = (Boolean) requestMap.get("isReturnable");
-        Boolean isWarrantyAvailable = (Boolean) requestMap.get("isWarrantyAvailable");
-
-        String wPeriodYears = String.valueOf(requestMap.get("warrantyPeriodYears"));
-        Integer warrantyYears = (wPeriodYears == null || wPeriodYears.isEmpty()) ? 0 : Integer.parseInt(wPeriodYears);
-
-        String wPeriodMonths = String.valueOf(requestMap.get("warrantyPeriodMonths"));
-        Integer warrantyMonths = (wPeriodMonths == null || wPeriodMonths.isEmpty()) ? 0 : Integer.parseInt(wPeriodMonths);
-
-        String wPeriodDays = String.valueOf(requestMap.get("warrantyPeriodDays"));
-        Integer warrantyDays = (wPeriodDays == null || wPeriodDays.isEmpty()) ? 0 : Integer.parseInt(wPeriodDays);
-
-        Period period = Period.of(warrantyYears, warrantyMonths, warrantyDays);
-
-
-        String expDate = (String)requestMap.get("expiryDate");
-        Instant expiryDate = null;
-        if (!StringUtils.isEmpty(expDate)) {
-            try {
-                expiryDate = Instant.parse(expDate);
-            } catch (DateTimeParseException e) {
-                return new ApiResponseHandler("Invalid expiryDate format. Please use ISO-8601 format (e.g., 2025-12-31T23:59:59Z)",
-                        null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
-            }
-        }
+        Instant expiryDate = apiRequestHandler.getInstantValue("expiryDate");
 
         Item item = new Item();
         item.setStoreId(storeId);
@@ -185,7 +134,7 @@ public class ItemsApiController {
         item.setCostPrice(costPrice);
         item.setProfitToGainInPercentage(profitToGainInPercentage);
         item.setBaseSellingPrice(baseSellingPrice);
-        item.setAdditionalPrice(additionalPrice);
+        item.setAdditionalPrice(additionalPrice == null?BigDecimal.ZERO:additionalPrice);
         item.setApplicableTaxes(applicableTaxes);
         item.setDiscountMasterIds(discountMasterIds);
         item.setBrand(brand);
@@ -203,7 +152,10 @@ public class ItemsApiController {
         item.setWarrantyPeriod(period);
         item.setExpiryDate(expiryDate);
 
-        return itemsApiService.addItemToStore(item);
+        ApiResponseHandler apiResponseHandler = itemsApiService.addItemToStore(item);
+        if (apiResponseHandler.getStatusCode() != 201)
+            return new ResponseEntity<>(apiResponseHandler, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(apiResponseHandler, HttpStatus.CREATED);
     }
 
     @PostMapping(value = "/upload-item-images", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
@@ -333,10 +285,10 @@ public class ItemsApiController {
     }
 
     @PostMapping("/get-item-by-id")
-    public ApiResponseHandler getItemById(@RequestBody ApiRequestHandler apiRequestHandler){
+    public ResponseEntity<ApiResponseHandler> getItemById(@RequestBody ApiRequestHandler apiRequestHandler){
         String itemId = apiRequestHandler.getStringValue("itemId");
         if (StringUtils.isEmpty(itemId))
-            return new ApiResponseHandler("please provide itemId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide itemId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         return itemsApiService.getItemById(itemId);
     }

@@ -27,8 +27,14 @@ public class MasterApiRepository {
         return mongoTemplate.save(icm);
     }
 
-    public ItemsCategoryMaster deleteItemCategory(String categoryId) {
-        return mongoTemplate.findAndRemove(new Query(Criteria.where("id").is(categoryId)), ItemsCategoryMaster.class);
+    public ItemsCategoryMaster deleteItemCategory(String categoryId, Set<String> storeIds) {
+        ItemsCategoryMaster itemCategory = mongoTemplate.findOne(new Query(Criteria.where("id").is(categoryId)), ItemsCategoryMaster.class);
+        if (itemCategory.getStoreIds().size() > storeIds.size()){
+            itemCategory.getStoreIds().removeAll(storeIds);
+        }else {
+            mongoTemplate.remove(itemCategory);
+        }
+        return itemCategory;
     }
 
     public List<ItemsCategoryMaster> getAllItemCategoryMaster(List<String> storeIds) {
@@ -164,5 +170,9 @@ public class MasterApiRepository {
 
     public ItemsCategoryMaster findCategoryByName(String categoryName) {
         return mongoTemplate.findOne(new Query(Criteria.where("categoryName").is(categoryName)), ItemsCategoryMaster.class);
+    }
+
+    public UnitMaster findUnitById(String unitMasterId) {
+        return mongoTemplate.findById(unitMasterId, UnitMaster.class);
     }
 }

@@ -96,9 +96,9 @@ public class ApiRequestHandler {
                 return (BigDecimal) value;
 
             try {
-                bigDecimal = BigDecimalParser.parse((String) value);
+                bigDecimal = BigDecimalParser.parse(String.valueOf(value));
             } catch (NumberFormatException e) {
-                return null;
+                throw new CustomExceptions("Value for "+key+" is invalid, Numeric values expected");
             }
             return bigDecimal;
         }
@@ -274,15 +274,21 @@ public class ApiRequestHandler {
 
 
 //    14.
-    public Map<?, ?> getMapValue(String key){
+    public <T, U>Map<T, U> getMapValue(String key, Class<T> keyType, Class<U> valueType){
         if (data == null || StringUtils.isEmpty(key))
             return null;
 
         Object value = data.get(key);
-        if (value instanceof Map<?,?>)
-            return (Map<?, ?>) value;
 
-        return null;
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            objectMapper.registerModule(new JavaTimeModule());
+            return objectMapper.readValue(objectMapper.writeValueAsString(value), objectMapper.getTypeFactory().constructMapType(Map.class, keyType, valueType));
+        } catch (JsonProcessingException e) {
+            throw new CustomExceptions("Invalid Map value for '" + key + "': " + value +
+                    " of type " + value.getClass().getName() +
+                    " cannot be converted to Map<" + keyType.getName() + ", " + valueType.getName() + ">");
+        }
     }
 
 //    15.
@@ -299,7 +305,7 @@ public class ApiRequestHandler {
             return Instant.parse(value);
         }catch (DateTimeParseException e){
             System.out.println(e.getMessage());
-            return null;
+            throw new CustomExceptions("Invalid value for field "+key+": " + value + " cannot be treated as Instant");
         }
     }
 }

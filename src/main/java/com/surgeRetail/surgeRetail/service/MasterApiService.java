@@ -67,8 +67,8 @@ public class MasterApiService {
 
     }
 
-    public ApiResponseHandler deleteItemCategory(String categoryId) {
-        ItemsCategoryMaster itemsCategoryMaster = masterApiRepository.deleteItemCategory(categoryId);
+    public ApiResponseHandler deleteItemCategory(String categoryId, Set<String> storeIds) {
+        ItemsCategoryMaster itemsCategoryMaster = masterApiRepository.deleteItemCategory(categoryId, storeIds);
         return new ApiResponseHandler("Item category deleted successfully!!", itemsCategoryMaster, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
 
     }

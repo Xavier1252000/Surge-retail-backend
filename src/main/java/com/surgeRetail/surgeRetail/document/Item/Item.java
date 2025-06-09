@@ -31,7 +31,7 @@ public class Item extends Auditable implements Serializable {
     private Set<String> discountMasterIds;
     private BigDecimal totalDiscountPrice = BigDecimal.ZERO; // Any discount applied
     private BigDecimal finalPrice = BigDecimal.ZERO; // Computed as (price + additionalPrice + taxPrice - discountPrice)
-    private BigDecimal profitMargin; // (FinalPrice - totalTaxPrice - totalDiscountPrice)
+    private BigDecimal profitMargin; // (FinalPrice - totalTaxPrice - costPrice)
     private BigDecimal markupPercentage; // ((profitMargin) / CostPrice) * 100
     private String brand;
     private Set<String> categoryIds; // Reference to the category this item belongs to
