@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,5 +85,18 @@ public class ItemsApiRepository {
         query.addCriteria(criteria);
         query.with(Sort.by(Sort.Direction.DESC, "skuCode")).limit(1);
         return mongoTemplate.findOne(query, Item.class);
+    }
+
+    public boolean itemExistByName(String itemName, String storeId) {
+        System.out.println(1);
+        return mongoTemplate.exists(new Query(Criteria.where("itemName").is(itemName).and("storeId").is(storeId)), Item.class);
+    }
+
+    public boolean itemExistByNameAndNotById(String id, String itemName, String storeId) {
+        Query query = new Query();
+        Criteria criteria = Criteria.where("itemName").is(itemName).and("storeId").is(storeId).and("id").nin(Arrays.asList(id));
+        query.addCriteria(criteria);
+        System.out.println(mongoTemplate.find(query, Item.class));
+        return mongoTemplate.exists(query, Item.class);
     }
 }

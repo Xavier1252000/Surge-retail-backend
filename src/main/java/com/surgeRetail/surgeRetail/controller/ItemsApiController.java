@@ -2,8 +2,6 @@ package com.surgeRetail.surgeRetail.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.surgeRetail.surgeRetail.document.Item.Item;
-import com.surgeRetail.surgeRetail.document.userAndRoles.User;
-import com.surgeRetail.surgeRetail.security.UserDetailsImpl;
 import com.surgeRetail.surgeRetail.service.ItemsApiService;
 import com.surgeRetail.surgeRetail.utils.requestHandlers.ApiRequestHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
@@ -14,7 +12,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,7 +20,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.Period;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 
 @RestController
@@ -43,13 +39,6 @@ public class ItemsApiController {
     public ResponseEntity<ApiResponseHandler> addItemsToStore(@RequestBody ApiRequestHandler apiRequestHandler){
         System.out.println(apiRequestHandler);
 
-//        // if item is registered by storeAdmin, no need to manually provide storeId
-//        UserDetailsImpl principal = (UserDetailsImpl) (SecurityContextHolder.getContext().getAuthentication()).getPrincipal();
-//        if (principal.getUser().getRoles().contains(User.USER_ROLE_STORE_ADMIN)){
-//            if (principal.getStores().size()==1)   //storeAdmin must have only one store
-//                storeId = principal.getStores().get(0).getId();
-//        }
-
         //  if user is not a store admin, and client or some other authoritative is trying to add item, we have to manually provide the storeId
         String storeId = apiRequestHandler.getStringValue("storeId");
         if (StringUtils.isEmpty(storeId))
@@ -67,8 +56,8 @@ public class ItemsApiController {
 
         System.out.println(profitToGainInPercentage +"   "+baseSellingPrice);
         
-        if ((profitToGainInPercentage != null && baseSellingPrice != null) || (profitToGainInPercentage == null && baseSellingPrice == null))      // checking both baseSellingPrice and profitToGainInPercentage should not be present
-            return new ResponseEntity<>(new ApiResponseHandler("please provide any one profitToGainInPercentage or baseSellingPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+//        if ((profitToGainInPercentage != null && baseSellingPrice != null) || (profitToGainInPercentage == null && baseSellingPrice == null))      // checking both baseSellingPrice and profitToGainInPercentage should not be present
+//            return new ResponseEntity<>(new ApiResponseHandler("please provide any one profitToGainInPercentage or baseSellingPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
 
         BigDecimal additionalPrice = apiRequestHandler.getBigDecimalValue("additionalPrice");
@@ -91,7 +80,7 @@ public class ItemsApiController {
 
         String supplierId = apiRequestHandler.getStringValue("supplierId");
 
-        String description = ("description");
+        String description = apiRequestHandler.getStringValue("description");
 
         List<String> imageInfoIds = apiRequestHandler.getListValue("itemImageInfoIds", String.class);
         List<String> itemImageInfoIds = CollectionUtils.isEmpty(imageInfoIds)?new ArrayList<>():imageInfoIds;
@@ -170,104 +159,106 @@ public class ItemsApiController {
     @PostMapping("/update-item")
     public ResponseEntity<ApiResponseHandler> updateItem(@RequestBody ApiRequestHandler apiRequestHandler){
         String itemId = apiRequestHandler.getStringValue("itemId");
+        System.out.println("-----------------------------------------"+itemId);
         if (StringUtils.isEmpty(itemId))
             return new ResponseEntity<>(new ApiResponseHandler("please provide itemId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
-        String storeId = null;
 
-        // if item is registered by storeAdmin, no need to manually provide storeId
-        UserDetailsImpl principal = (UserDetailsImpl) (SecurityContextHolder.getContext().getAuthentication()).getPrincipal();
-        if (principal.getUser().getRoles().contains(User.USER_ROLE_STORE_ADMIN)){
-            if (principal.getStores().size()==1)   //storeAdmin must have only one store
-                storeId = principal.getStores().get(0).getId();
-        }
+        System.out.println(apiRequestHandler);
 
         //  if user is not a store admin, and client or some other authoritative is trying to add item, we have to manually provide the storeId
+        String storeId = apiRequestHandler.getStringValue("storeId");
         if (StringUtils.isEmpty(storeId))
-            storeId = apiRequestHandler.getStringValue("storeId");
-
-        if (StringUtils.isEmpty(storeId))
-            return new ResponseEntity<>(new ApiResponseHandler("please provide storeId",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ApiResponseHandler("Please provide storeId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         String itemName = apiRequestHandler.getStringValue("itemName");
         if (StringUtils.isEmpty(itemName))
             return new ResponseEntity<>(new ApiResponseHandler("please provide itemName",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         BigDecimal costPrice = apiRequestHandler.getBigDecimalValue("costPrice");
-        if(costPrice == null || costPrice.compareTo(BigDecimal.ZERO)<=0)
-            return new ResponseEntity<>(new ApiResponseHandler("please provide valid costPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         BigDecimal profitToGainInPercentage = apiRequestHandler.getBigDecimalValue("profitToGainInPercentage");
 
         BigDecimal baseSellingPrice = apiRequestHandler.getBigDecimalValue("baseSellingPrice");
 
-        if (profitToGainInPercentage != null && baseSellingPrice != null || profitToGainInPercentage == null && baseSellingPrice == null)      // checking both baseSellingPrice and profitToGainInPercentage should not be present
-            return new ResponseEntity<>(new ApiResponseHandler("please provide any one profitToGainInPercentage or baseSellingPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+        System.out.println(profitToGainInPercentage +"   "+baseSellingPrice);
 
-        if (profitToGainInPercentage != null && profitToGainInPercentage.compareTo(BigDecimal.ZERO) < 0){
-            return new ResponseEntity<>(new ApiResponseHandler("please provide valid values in profitToGainInPercentage", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
-        }
-
-        if (baseSellingPrice != null && baseSellingPrice.compareTo(BigDecimal.ZERO) < 0){
-            return new ResponseEntity<>(new ApiResponseHandler("please provide valid values in baseSellingPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
-        }
-
+//        if ((profitToGainInPercentage != null && baseSellingPrice != null) || (profitToGainInPercentage == null && baseSellingPrice == null))      // checking both baseSellingPrice and profitToGainInPercentage should not be present
+//            return new ResponseEntity<>(new ApiResponseHandler("please provide any one profitToGainInPercentage or baseSellingPrice", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         BigDecimal additionalPrice = apiRequestHandler.getBigDecimalValue("additionalPrice");
-        if (additionalPrice != null && additionalPrice.compareTo(BigDecimal.ZERO) < 0)
-            return new ResponseEntity<>(new ApiResponseHandler("additionalPrice can't be less than zero", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         String stockUnit = apiRequestHandler.getStringValue("stockUnit");
         if (StringUtils.isEmpty(stockUnit))
             return new ResponseEntity<>(new ApiResponseHandler("please provide stockUnit",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
-        Set<String> applicableTaxes = apiRequestHandler.getSetValue("applicableTaxes", String.class);
+        Set<String> appTaxes = apiRequestHandler.getSetValue("applicableTaxes", String.class);
+        Set<String> applicableTaxes = CollectionUtils.isEmpty(appTaxes)?new HashSet<>(): appTaxes;
 
-        Set<String> discountMasterIds = apiRequestHandler.getSetValue("discountMasterIds", String.class);
+
+        Set<String> dmIds = apiRequestHandler.getSetValue("discountMasterIds", String.class);
+        Set<String> discountMasterIds = CollectionUtils.isEmpty(dmIds)?new HashSet<>():dmIds;
 
         String brand = apiRequestHandler.getStringValue("brand");
 
-        Set<String> categoryIds = apiRequestHandler.getSetValue("categoryIds", String.class);
+        Set<String> catIds = apiRequestHandler.getSetValue("categoryIds", String.class);
+        Set<String> categoryIds = CollectionUtils.isEmpty(catIds)? new HashSet<>(): catIds;
 
         String supplierId = apiRequestHandler.getStringValue("supplierId");
 
         String description = apiRequestHandler.getStringValue("description");
 
+        List<String> imageInfoIds = apiRequestHandler.getListValue("itemImageInfoIds", String.class);
+        List<String> itemImageInfoIds = CollectionUtils.isEmpty(imageInfoIds)?new ArrayList<>():imageInfoIds;
+
         Float itemStock = apiRequestHandler.getFloatValue("itemStock");
-        if (itemStock == null || itemStock < 0)
-            return new ResponseEntity<>(new ApiResponseHandler("itemStock can't be negative", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+        if (itemStock == null || itemStock < 1)
+            return new ResponseEntity<>(new ApiResponseHandler("please provide item stock", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
-        Float stockThreshold =  apiRequestHandler.getFloatValue("stockThreshold");
-        if (stockThreshold == null || stockThreshold < 0)
-            return new ResponseEntity<>(new ApiResponseHandler("please provide valid values in stockThreshold can be integer or decimal", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
-        Set<String> tutorialLinks = apiRequestHandler.getSetValue("tutorialLinks", String.class);
+        Float stockThreshold = apiRequestHandler.getFloatValue("stockThreshold");
+
+
+        Set<String> tutLinks = apiRequestHandler.getSetValue("tutorialLinks", String.class);
+        Set<String> tutorialLinks = CollectionUtils.isEmpty(tutLinks)?new HashSet<>():tutLinks;
 
         String barcode = apiRequestHandler.getStringValue("barcode");
 
         Boolean isReturnable = apiRequestHandler.getBooleanValue("isReturnable");
-        Boolean isWarrantyAvailable = apiRequestHandler.getBooleanValue("isWarrantyAvailable");
+        if (isReturnable == null)
+            isReturnable = false;
 
-        Integer warrantyYears = apiRequestHandler.getIntegerValue("warrantyPeriodYears");
-        Integer warrantyMonths = apiRequestHandler.getIntegerValue("warrantyPeriodMonths");
-        Integer warrantyDays = apiRequestHandler.getIntegerValue("warrantyPeriodDays");
-        Period period = Period.of(warrantyYears, warrantyMonths, warrantyDays);
+        Boolean isWarrantyAvailable = apiRequestHandler.getBooleanValue("isWarrantyAvailable");
+        Period period = null;
+        if (isWarrantyAvailable) {
+            Integer warrantyYears = apiRequestHandler.getIntegerValue("warrantyPeriodYears");
+
+            Integer warrantyMonths = apiRequestHandler.getIntegerValue("warrantyPeriodMonths");
+
+            Integer warrantyDays = apiRequestHandler.getIntegerValue("warrantyPeriodDays");
+
+            period = Period.of(warrantyYears==null?0:warrantyYears, warrantyMonths==null?0:warrantyMonths, warrantyDays==null?0:warrantyDays);
+        }
+
 
         Instant expiryDate = apiRequestHandler.getInstantValue("expiryDate");
 
-        Item item = new Item();
+        Item item = itemsApiService.itemById(itemId);
+        if (item == null)
+            return new ResponseEntity<>(new ApiResponseHandler("no item found by provided itemId", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
         item.setId(itemId);
         item.setStoreId(storeId);
         item.setItemName(itemName);
         item.setCostPrice(costPrice);
         item.setProfitToGainInPercentage(profitToGainInPercentage);
         item.setBaseSellingPrice(baseSellingPrice);
-        item.setAdditionalPrice(additionalPrice);
+        item.setAdditionalPrice(additionalPrice == null?BigDecimal.ZERO:additionalPrice);
         item.setApplicableTaxes(applicableTaxes);
         item.setDiscountMasterIds(discountMasterIds);
         item.setBrand(brand);
         item.setCategoryIds(categoryIds);
         item.setSupplierId(supplierId);
         item.setDescription(description);
+        item.setItemImageInfoIds(itemImageInfoIds);
         item.setItemStock(itemStock);
         item.setStockThreshold(stockThreshold);
         item.setTutorialLinks(tutorialLinks);
@@ -278,7 +269,7 @@ public class ItemsApiController {
         item.setWarrantyPeriod(period);
         item.setExpiryDate(expiryDate);
 
-        ApiResponseHandler addItemResponse = itemsApiService.addItemToStore(item);
+        ApiResponseHandler addItemResponse = itemsApiService.updateItem(item);
         if (addItemResponse.getStatusCode() != 201)
             return new ResponseEntity<>(addItemResponse, HttpStatus.BAD_REQUEST);
         return new ResponseEntity<>(addItemResponse, HttpStatus.CREATED);

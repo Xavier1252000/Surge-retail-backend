@@ -19,8 +19,8 @@ import com.surgeRetail.surgeRetail.utils.AuthenticatedUserDetails;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
-import jdk.dynalink.NamedOperation;
-import org.apache.commons.lang3.StringUtils;
+
+import io.micrometer.common.util.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -58,6 +58,13 @@ public class ItemsApiService {
         String storeId = item.getStoreId();
         if(!itemsApiRepository.isStoreExistsById(storeId))
             return new ApiResponseHandler("store not exists with providedId",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        System.out.println(item.getId());
+        if (item.getId() == null && itemsApiRepository.itemExistByName(item.getItemName(), storeId))
+            return new ApiResponseHandler("Item already exist with itemName "+item.getItemName(), null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        if (!StringUtils.isEmpty(item.getId()) && itemsApiRepository.itemExistByNameAndNotById(item.getId(), item.getItemName(), item.getStoreId())){
+            return new ApiResponseHandler("Item already exist with itemName "+item.getItemName(), null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        }
 
 
         Item itemByStoreAndGreatestSku = itemsApiRepository.getItemByStoreAndGreatestSku(storeId);
@@ -66,6 +73,93 @@ public class ItemsApiService {
         }else {
             item.setSkuCode(1);
         }
+//        Setting profit percentage or profitMargin with the help of other one
+        if (item.getProfitToGainInPercentage() != null) {
+            BigDecimal profitMargin = item.getProfitToGainInPercentage()
+                    .multiply(item.getCostPrice())
+                    .divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP) // Higher precision
+                    .setScale(2, RoundingMode.HALF_UP); // Final rounding to 2 decimals
+
+            item.setBaseSellingPrice(item.getCostPrice().add(profitMargin).setScale(2, RoundingMode.HALF_UP));
+        } else {
+            BigDecimal profitToGainPercentage = item.getBaseSellingPrice()
+                    .subtract(item.getCostPrice())
+                    .divide(item.getCostPrice(), 4, RoundingMode.HALF_UP) // Higher precision
+                    .multiply(BigDecimal.valueOf(100))
+                    .setScale(2, RoundingMode.HALF_UP); // Final rounding to 2 decimals
+
+            item.setProfitToGainInPercentage(profitToGainPercentage);
+        }
+
+        Set<String> applicableTaxMasterIds = item.getApplicableTaxes();
+        if (!CollectionUtils.isEmpty(applicableTaxMasterIds)) {
+            List<TaxMaster> taxMasterByIds = masterApiRepository.findTaxMasterByIds(applicableTaxMasterIds);
+            Set<String> retrievedTaxMasterIds = taxMasterByIds.stream().map(x -> x.getId()).collect(Collectors.toSet());
+
+            for (String e : applicableTaxMasterIds) {
+                if (!retrievedTaxMasterIds.contains(e))
+                    return new ApiResponseHandler("tax not found with taxMasterId: " + e, null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            }
+
+
+            BigDecimal totalTaxPrice = BigDecimal.valueOf(0);
+            for (TaxMaster t : taxMasterByIds) {
+                BigDecimal taxPercentage = t.getTaxPercentage();
+                BigDecimal taxPrice = (item.getBaseSellingPrice().multiply(taxPercentage)).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+                totalTaxPrice = totalTaxPrice.add(taxPrice);
+            }
+            item.setTotalTaxPrice(totalTaxPrice);
+        }
+
+
+//      Setting  Discount master     -------------------->
+        Set<String> discountMasterIds = item.getDiscountMasterIds();
+        if (!CollectionUtils.isEmpty(discountMasterIds)) {
+            List<DiscountMaster> discountMasterByIds = masterApiRepository.findDiscountMasterByIds(discountMasterIds);
+            Set<String> retDiscountMasterIds = discountMasterByIds.stream().map(x -> x.getId()).collect(Collectors.toSet());
+            for (String e : discountMasterIds) {
+                if (!retDiscountMasterIds.contains(e))
+                    return new ApiResponseHandler("discount not found by discountMasterId: " + e, null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            }
+            BigDecimal totalDiscountPrice = null;
+            for (DiscountMaster d : discountMasterByIds) {
+                BigDecimal discountPercentage = d.getDiscountPercentage();
+                BigDecimal discountPrice = (item.getBaseSellingPrice().multiply(discountPercentage)).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+                totalDiscountPrice = item.getTotalDiscountPrice().add(discountPrice);
+            }
+            item.setTotalDiscountPrice(totalDiscountPrice);
+        }
+
+        item.setFinalPrice(item.getBaseSellingPrice()
+                .add(item.getTotalTaxPrice())
+                .add(item.getAdditionalPrice())
+                .subtract(item.getTotalDiscountPrice()!=null?item.getTotalDiscountPrice():BigDecimal.ZERO));
+
+        item.setProfitMargin(item.getFinalPrice().subtract(item.getTotalTaxPrice()!=null?item.getTotalTaxPrice():BigDecimal.ZERO).subtract(item.getCostPrice()).setScale(2, RoundingMode.HALF_UP));
+
+
+        item.setMarkupPercentage(item.getProfitMargin().divide(item.getCostPrice(), 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)));
+        item.onCreate();
+        itemsApiRepository.saveItem(item);
+
+
+        return new ApiResponseHandler("item added successfully to store", item, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
+    }
+
+
+    public ApiResponseHandler updateItem(Item item) {
+
+        String storeId = item.getStoreId();
+        if(!itemsApiRepository.isStoreExistsById(storeId))
+            return new ApiResponseHandler("store not exists with providedId",null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        System.out.println(item.getId());
+        if (item.getId() == null && itemsApiRepository.itemExistByName(item.getItemName(), storeId))
+            return new ApiResponseHandler("Item already exist with itemName "+item.getItemName(), null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+
+        if (!StringUtils.isEmpty(item.getId()) && itemsApiRepository.itemExistByNameAndNotById(item.getId(), item.getItemName(), item.getStoreId())){
+            return new ApiResponseHandler("Item already exist with itemName "+item.getItemName(), null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        }
+
 //        Setting profit percentage or profitMargin with the help of other one
         if (item.getProfitToGainInPercentage() != null) {
             BigDecimal profitMargin = item.getProfitToGainInPercentage()
@@ -233,9 +327,14 @@ public class ItemsApiService {
             int months = itemById.getWarrantyPeriod().getMonths();
             int days = itemById.getWarrantyPeriod().getDays();
             node.put("warrantyPeriod", (years != 0?years+ " Years ": "") +" "+ (months !=0?months+ " months":"") + " " + (days != 0?days+" days":""));
-            node.put("warrantyYears", years);
-            node.put("warrantyMonths", months);
-            node.put("warrantyDays", days);
+            if (years != 0)
+                node.put("warrantyYears", years);
+
+            if (months != 0)
+                node.put("warrantyMonths", months);
+
+            if(days != 0)
+                node.put("warrantyDays", days);
         }
         node.put("expiryDate", itemById.getExpiryDate() != null ? itemById.getExpiryDate().toString() : null);
         node.putPOJO("applicableTaxes", objectMapper.valueToTree(applicableTaxes));
@@ -315,5 +414,9 @@ public class ItemsApiService {
         }
 
         return new ResponseEntity<>(new ApiResponseHandler("items fetched successfully", root, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false), HttpStatus.OK);
+    }
+
+    public Item itemById(String itemId) {
+        return itemsApiRepository.getItemById(itemId);
     }
 }
