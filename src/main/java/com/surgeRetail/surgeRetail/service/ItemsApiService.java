@@ -419,4 +419,10 @@ public class ItemsApiService {
     public Item itemById(String itemId) {
         return itemsApiRepository.getItemById(itemId);
     }
+
+    public ResponseEntity<ApiResponseHandler> getItemByNameSkuOrBarCode(String itemName, Integer skuCode, String barCode, String storeId) {
+        List<Item> items = itemsApiRepository.findItemByNameSkuOrBarCode(itemName, skuCode, barCode, storeId);
+        System.out.println(items);
+        return ApiResponseHandler.createResponse("Success", items, ResponseStatusCode.SUCCESS);
+    }
 }

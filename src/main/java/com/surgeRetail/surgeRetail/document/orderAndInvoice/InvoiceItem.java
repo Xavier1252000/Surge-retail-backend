@@ -9,10 +9,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.math.BigDecimal;
 import java.util.Set;
 
-@EqualsAndHashCode(callSuper = true)
 @Data
 @Document
-public class InvoiceItem extends Auditable {
+public class InvoiceItem {
 
     @Id
     private String id;

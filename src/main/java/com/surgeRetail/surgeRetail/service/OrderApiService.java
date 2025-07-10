@@ -17,8 +17,11 @@ import com.surgeRetail.surgeRetail.utils.AuthenticatedUserDetails;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
@@ -211,17 +214,15 @@ public class OrderApiService {
         return new ApiResponseHandler("Invoice item saved", invItem, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, false);
     }
 
-    
-    public ApiResponseHandler generateInvoice(List<InvoiceItem> invoiceItems, BigDecimal taxOverTotalPrice, BigDecimal discountOverTotalPrice, String customerName, String customerContactNo, String couponCode, String deliveryStatus, String paymentStatus, BigDecimal grandTotal){
-        List<String> itemIds = invoiceItems.stream().map(x -> x.getItemId()).toList();
+    @Transactional
+    public ResponseEntity<ApiResponseHandler> generateInvoice(List<InvoiceItem> invoiceItems, BigDecimal taxOverTotalPrice, BigDecimal discountOverTotalPrice, String customerName, String customerContactNo, String couponCode, String deliveryStatus, String paymentStatus, BigDecimal grandTotal, String storeId){
         Invoice invoice = new Invoice();
         invoice.setCustomerName(customerName);
         invoice.setCustomerContactNo(customerContactNo);
 
-        Long serialNo = orderApiRepository.getGreatestSerialNoInvoice().getSerialNo();
+        Long serialNo = Objects.nonNull(orderApiRepository.getGreatestSerialNoInvoice(storeId))?orderApiRepository.getGreatestSerialNoInvoice(storeId).getSerialNo():null;
         invoice.setSerialNo(serialNo == null ? 1L: serialNo+1L);
 
-        invoice.setInvoiceItemsIds(invoiceItems.stream().map(x->x.getId()).toList());
         invoice.setGrossAmount(invoiceItems.stream().map(InvoiceItem::getTotalBasePrice).reduce(BigDecimal.ZERO, BigDecimal::add));
         invoice.setNetAmount(invoiceItems.stream().map(InvoiceItem::getFinalPrice).reduce(BigDecimal.ZERO, BigDecimal::add));
 
@@ -242,12 +243,18 @@ public class OrderApiService {
         invoice.onCreate();
         Invoice savedInvoice = orderApiRepository.saveInvoice(invoice);
 
+        orderApiRepository.reduceItemsStock(invoiceItems);
+
+        invoiceItems.forEach(e->{
+            e.setInvoiceId(savedInvoice.getId());
+        });
+
+        List<InvoiceItem> savedInvoiceItems = orderApiRepository.saveAllInvoiceItem(invoiceItems);
         ObjectNode node = objectMapper.createObjectNode();
-        try {
-            node = AppUtils.mapObjectToObjectNode(savedInvoice);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-        return new ApiResponseHandler("invoice generated successfully", node, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        node.set("invoice", objectMapper.valueToTree(savedInvoice));
+        node.set("invoiceItems", objectMapper.valueToTree(savedInvoiceItems));
+
+
+        return new ResponseEntity<>(new ApiResponseHandler("invoice generated successfully", node, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false), HttpStatus.CREATED);
     }
 }

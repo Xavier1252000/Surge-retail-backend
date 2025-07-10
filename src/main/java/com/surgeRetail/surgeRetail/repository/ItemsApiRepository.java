@@ -3,6 +3,7 @@ package com.surgeRetail.surgeRetail.repository;
 import com.surgeRetail.surgeRetail.document.Item.Item;
 import com.surgeRetail.surgeRetail.document.Item.ItemImageInfo;
 import com.surgeRetail.surgeRetail.document.store.Store;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -96,7 +97,29 @@ public class ItemsApiRepository {
         Query query = new Query();
         Criteria criteria = Criteria.where("itemName").is(itemName).and("storeId").is(storeId).and("id").nin(Arrays.asList(id));
         query.addCriteria(criteria);
-        System.out.println(mongoTemplate.find(query, Item.class));
         return mongoTemplate.exists(query, Item.class);
+    }
+
+    public List<Item> findItemByNameSkuOrBarCode(String itemName, Integer skuCode, String barCode, String storeId) {
+        Query query = new Query();
+        Criteria criteria = Criteria.where("storeId").is(storeId);
+        if (!StringUtils.isEmpty(itemName)) {
+            criteria = criteria.and("itemName").regex(itemName, "i");
+            query.addCriteria(criteria);
+            return mongoTemplate.find(query, Item.class);
+        }
+
+        if (skuCode!=null) {
+            criteria.and("skuCode").is(skuCode);
+            query.addCriteria(criteria);
+            return mongoTemplate.find(query, Item.class);
+        }
+
+        if (!StringUtils.isEmpty(barCode)) {
+            criteria.and("barCode").is(barCode);
+            query.addCriteria(criteria);
+            return mongoTemplate.find(query, Item.class);
+        }
+        return mongoTemplate.find(query, Item.class);
     }
 }

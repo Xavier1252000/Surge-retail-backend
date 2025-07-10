@@ -10,6 +10,9 @@ import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
 import io.micrometer.common.util.StringUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -105,8 +108,13 @@ public class OrderApiController {
     }
 
     @PostMapping("/generate-invoice")     // for offline retail billing
-    public ApiResponseHandler generateInvoice(@RequestBody ApiRequestHandler apiRequestHandler){
+    public ResponseEntity<ApiResponseHandler> generateInvoice(@RequestBody ApiRequestHandler apiRequestHandler){
+        String storeId = apiRequestHandler.getStringValue("storeId");
+        if (StringUtils.isEmpty(storeId))
+            return ApiResponseHandler.createResponse("Please provide storeId", null , ResponseStatusCode.BAD_REQUEST);
         List<InvoiceItem> invoiceItems = apiRequestHandler.getListValue("invoiceItems", InvoiceItem.class);
+        if (CollectionUtils.isEmpty(invoiceItems))
+            return new ResponseEntity<>(new ApiResponseHandler("please provide Invoice Items", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
         String customerName = apiRequestHandler.getStringValue("customerName");
         String customerContactNo = apiRequestHandler.getStringValue("customerContactNo");
         BigDecimal discountOverTotalPrice = apiRequestHandler.getBigDecimalValue("discountOverTotalPrice");
@@ -122,22 +130,22 @@ public class OrderApiController {
 
         String deliveryStatus = apiRequestHandler.getStringValue("deliveryStatus");
         if (deliveryStatus.isEmpty())
-            return new ApiResponseHandler("please provide delivery status", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide delivery status", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         if (!deliveryStatus.equals(Invoice.DELIVERY_STATUS_NOT_DELIVERED) && !deliveryStatus.equals(Invoice.DELIVERY_STATUS_OUT_FOR_DELIVERY) && !deliveryStatus.equals(Invoice.DELIVERY_STATUS_DELIVERED))
-            return new ApiResponseHandler("deliveryStatus can only be " + Invoice.DELIVERY_STATUS_NOT_DELIVERED + ", "
-            +Invoice.DELIVERY_STATUS_OUT_FOR_DELIVERY+", "+Invoice.DELIVERY_STATUS_DELIVERED, null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("deliveryStatus can only be " + Invoice.DELIVERY_STATUS_NOT_DELIVERED + ", "
+            +Invoice.DELIVERY_STATUS_OUT_FOR_DELIVERY+", "+Invoice.DELIVERY_STATUS_DELIVERED, null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         String paymentStatus = apiRequestHandler.getStringValue("paymentStatus");
         if (StringUtils.isEmpty(paymentStatus))
-            return new ApiResponseHandler("please provide payment status", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("please provide payment status", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         if (!paymentStatus.equals(Invoice.PAYMENT_STATUS_PENDING) && !paymentStatus.equals(Invoice.PAYMENT_STATUS_CANCELLED) && !paymentStatus.equals(Invoice.PAYMENT_STATUS_PAID))
-            return new ApiResponseHandler("paymentStatus can only be " + Invoice.PAYMENT_STATUS_PENDING + ", "+Invoice.PAYMENT_STATUS_CANCELLED+", "+Invoice.PAYMENT_STATUS_PAID, null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return new ResponseEntity<>(new ApiResponseHandler("paymentStatus can only be " + Invoice.PAYMENT_STATUS_PENDING + ", "+Invoice.PAYMENT_STATUS_CANCELLED+", "+Invoice.PAYMENT_STATUS_PAID, null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
         BigDecimal grandTotal = apiRequestHandler.getBigDecimalValue("grandTotal");
 
-        return orderApiService.generateInvoice(invoiceItems, taxOverTotalPrice, discountOverTotalPrice, customerName, customerContactNo, couponCode, deliveryStatus, paymentStatus, grandTotal);
+        return orderApiService.generateInvoice(invoiceItems, taxOverTotalPrice, discountOverTotalPrice, customerName, customerContactNo, couponCode, deliveryStatus, paymentStatus, grandTotal, storeId);
     }
 
 }

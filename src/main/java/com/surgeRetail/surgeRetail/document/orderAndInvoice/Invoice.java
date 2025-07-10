@@ -18,7 +18,6 @@ public class Invoice extends Auditable {
     private Long serialNo;   //invoiceNo
     private String storeId;
     private String customerId;     //user id who will be buyer
-    private List<String> invoiceItemsIds;
     private BigDecimal grossAmount;     // item total amount without tax
     private BigDecimal netAmount;      //total amount with tax
     private List<String> invoiceTaxIds;

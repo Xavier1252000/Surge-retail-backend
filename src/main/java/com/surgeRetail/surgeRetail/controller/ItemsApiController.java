@@ -306,4 +306,18 @@ public class ItemsApiController {
 
         return itemsApiService.getItemsByStoreId(index, itemPerIndex, storeId);
     }
+
+
+    @PostMapping("/get-item-by-name-sku-barcode")
+    public ResponseEntity<ApiResponseHandler> getItemByNameSkuOrBarcode(@RequestBody ApiRequestHandler apiRequestHandler){
+        System.out.println(apiRequestHandler);
+        String storeId = apiRequestHandler.getStringValue("storeId");
+        if (StringUtils.isEmpty(storeId))
+            ApiResponseHandler.createResponse("please provide storeId",null, ResponseStatusCode.BAD_REQUEST);
+        String itemName = apiRequestHandler.getStringValue("itemName");
+        Integer skuCode = apiRequestHandler.getIntegerValue("skuCode");
+        String barCode = apiRequestHandler.getStringValue("barCode");
+
+        return itemsApiService.getItemByNameSkuOrBarCode(itemName, skuCode, barCode, storeId);
+    }
 }
