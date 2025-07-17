@@ -422,7 +422,85 @@ public class ItemsApiService {
 
     public ResponseEntity<ApiResponseHandler> getItemByNameSkuOrBarCode(String itemName, Integer skuCode, String barCode, String storeId) {
         List<Item> items = itemsApiRepository.findItemByNameSkuOrBarCode(itemName, skuCode, barCode, storeId);
-        System.out.println(items);
-        return ApiResponseHandler.createResponse("Success", items, ResponseStatusCode.SUCCESS);
+
+        ArrayNode root = objectMapper.createArrayNode();
+        items.forEach(item -> {
+            ObjectNode node = objectMapper.createObjectNode();
+            node.put("id", item.getId());
+            node.put("storeId", item.getStoreId());
+            node.put("itemName", item.getItemName());
+            node.put("skuCode", item.getSkuCode());
+            node.put("costPrice", item.getCostPrice() != null ? item.getCostPrice().doubleValue() : 0.0);
+            node.put("profitToGainInPercentage", item.getProfitToGainInPercentage() != null ? item.getProfitToGainInPercentage().doubleValue() : 0.0);
+            node.put("baseSellingPrice", item.getBaseSellingPrice() != null ? item.getBaseSellingPrice().doubleValue() : 0.0);
+            node.put("additionalPrice", item.getAdditionalPrice() != null ? item.getAdditionalPrice().doubleValue() : 0.0);
+            node.put("totalTaxPrice", item.getTotalTaxPrice() != null ? item.getTotalTaxPrice().doubleValue() : 0.0);
+            node.put("totalDiscountPrice", item.getTotalDiscountPrice() != null ? item.getTotalDiscountPrice().doubleValue() : 0.0);
+            node.put("finalPrice", item.getFinalPrice() != null ? item.getFinalPrice().doubleValue() : 0.0);
+            node.put("profitMargin", item.getProfitMargin() != null ? item.getProfitMargin().doubleValue() : 0.0);
+            node.put("markupPercentage", item.getMarkupPercentage() != null ? item.getMarkupPercentage().doubleValue() : 0.0);
+            node.put("brand", item.getBrand() != null ? item.getBrand() : "");
+            node.put("description", item.getDescription() != null ? item.getDescription() : "");
+            node.put("itemStock", item.getItemStock() != null ? item.getItemStock() : 0);
+            node.put("stockThreshold", item.getStockThreshold() != null ? item.getStockThreshold() : 0);
+            node.put("barcode", item.getBarcode() != null ? item.getBarcode() : "");
+            node.put("stockUnit", item.getStockUnit() != null ? item.getStockUnit() : "");
+            node.put("stockUnitId", item.getStockUnit() != null ? item.getStockUnit() : "");
+            node.put("thresholdQuantityForAddTax", item.getThresholdQuantityForAddTax() != null ? item.getThresholdQuantityForAddTax().toString() : "");
+            node.put("isReturnable", item.getIsReturnable() != null ? item.getIsReturnable() : false);
+            node.put("isWarrantyAvailable", item.getIsWarrantyAvailable() != null ? item.getIsWarrantyAvailable() : false);
+            node.put("warrantyPeriod", item.getWarrantyPeriod() != null ? String.valueOf(item.getWarrantyPeriod()) : "");
+            node.put("expiryDate", item.getExpiryDate() != null ? item.getExpiryDate().toString() : "");
+
+            // categoryIds
+            ArrayNode categoryIds = objectMapper.createArrayNode();
+            if (item.getCategoryIds() != null) {
+                for (String id : item.getCategoryIds()) {
+                    categoryIds.add(id);
+                }
+            }
+            node.set("categoryIds", categoryIds);
+
+            // applicableTaxes
+            ArrayNode applicableTaxes = objectMapper.createArrayNode();
+            if (item.getApplicableTaxes() != null) {
+                for (String id : item.getApplicableTaxes()) {
+                    applicableTaxes.add(id);
+                }
+            }
+            node.set("applicableTaxes", applicableTaxes);
+
+            // discountMasterIds
+            ArrayNode discountMasterIds = objectMapper.createArrayNode();
+            if (item.getDiscountMasterIds() != null) {
+                for (String id : item.getDiscountMasterIds()) {
+                    discountMasterIds.add(id);
+                }
+            }
+            node.set("discountMasterIds", discountMasterIds);
+
+            // itemImageInfoIds
+            ArrayNode imageIds = objectMapper.createArrayNode();
+            if (item.getItemImageInfoIds() != null) {
+                for (String id : item.getItemImageInfoIds()) {
+                    imageIds.add(id);
+                }
+            }
+            node.set("itemImageInfoIds", imageIds);
+
+            // tutorialLinks
+            ArrayNode tutorialLinks = objectMapper.createArrayNode();
+            if (item.getTutorialLinks() != null) {
+                for (String link : item.getTutorialLinks()) {
+                    tutorialLinks.add(link);
+                }
+            }
+            node.set("tutorialLinks", tutorialLinks);
+
+            node.put("supplierId", item.getSupplierId() != null ? item.getSupplierId() : "");
+
+            root.add(node);
+        });
+        return ApiResponseHandler.createResponse("Success", root, ResponseStatusCode.SUCCESS);
     }
 }

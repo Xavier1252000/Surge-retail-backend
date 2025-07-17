@@ -132,7 +132,7 @@ public class ApiRequestHandler {
         }
         Object value = data.get(key);
 
-        if (value == null)
+        if (value == null || value.equals(""))
             return null;
 
         if (value instanceof Integer)
