@@ -1,5 +1,6 @@
 package com.surgeRetail.surgeRetail.service;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.surgeRetail.surgeRetail.document.Item.Item;
@@ -17,12 +18,15 @@ import com.surgeRetail.surgeRetail.utils.AuthenticatedUserDetails;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -219,6 +223,7 @@ public class OrderApiService {
         Invoice invoice = new Invoice();
         invoice.setCustomerName(customerName);
         invoice.setCustomerContactNo(customerContactNo);
+        invoice.setStoreId(storeId);
 
         Long serialNo = Objects.nonNull(orderApiRepository.getGreatestSerialNoInvoice(storeId))?orderApiRepository.getGreatestSerialNoInvoice(storeId).getSerialNo():null;
         invoice.setSerialNo(serialNo == null ? 1L: serialNo+1L);
@@ -255,6 +260,17 @@ public class OrderApiService {
         node.set("invoiceItems", objectMapper.valueToTree(savedInvoiceItems));
 
 
-        return new ResponseEntity<>(new ApiResponseHandler("invoice generated successfully", node, ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false), HttpStatus.CREATED);
+        return new ResponseEntity<>(new ApiResponseHandler("invoice generated successfully", node, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false), HttpStatus.CREATED);
+    }
+
+
+    public ResponseEntity<ApiResponseHandler> invoiceByInvoiceId(String invoiceId) {
+        Invoice invoice = orderApiRepository.invoiceByInvoiceId(invoiceId);
+        List<InvoiceItem> invoiceItems = orderApiRepository.findInvoiceItemByStoreId(invoice.getId());
+        objectMapper.configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true);
+        ObjectNode node = objectMapper.createObjectNode();
+        node.set("invoice", objectMapper.valueToTree(invoice));
+        node.set("invoiceItems", objectMapper.valueToTree(invoiceItems));
+        return ApiResponseHandler.createResponse("Success", node, ResponseStatusCode.SUCCESS);
     }
 }

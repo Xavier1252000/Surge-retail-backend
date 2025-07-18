@@ -112,11 +112,14 @@ public class OrderApiController {
         String storeId = apiRequestHandler.getStringValue("storeId");
         if (StringUtils.isEmpty(storeId))
             return ApiResponseHandler.createResponse("Please provide storeId", null , ResponseStatusCode.BAD_REQUEST);
+
         List<InvoiceItem> invoiceItems = apiRequestHandler.getListValue("invoiceItems", InvoiceItem.class);
         if (CollectionUtils.isEmpty(invoiceItems))
             return new ResponseEntity<>(new ApiResponseHandler("please provide Invoice Items", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+
         String customerName = apiRequestHandler.getStringValue("customerName");
         String customerContactNo = apiRequestHandler.getStringValue("customerContactNo");
+
         BigDecimal discountOverTotalPrice = apiRequestHandler.getBigDecimalValue("discountOverTotalPrice");
 
         BigDecimal taxOverTotalPrice = apiRequestHandler.getBigDecimalValue("taxOverTotalPrice");
@@ -143,9 +146,22 @@ public class OrderApiController {
         if (!paymentStatus.equals(Invoice.PAYMENT_STATUS_PENDING) && !paymentStatus.equals(Invoice.PAYMENT_STATUS_CANCELLED) && !paymentStatus.equals(Invoice.PAYMENT_STATUS_PAID))
             return new ResponseEntity<>(new ApiResponseHandler("paymentStatus can only be " + Invoice.PAYMENT_STATUS_PENDING + ", "+Invoice.PAYMENT_STATUS_CANCELLED+", "+Invoice.PAYMENT_STATUS_PAID, null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
 
+        String generationType = apiRequestHandler.getStringValue("generationType");
+        if (StringUtils.isEmpty(generationType))
+            return ApiResponseHandler.createResponse("please provide generationType", null, ResponseStatusCode.BAD_REQUEST);
+
+        if (!generationType.equals(Invoice.GENERATION_TYPE_OFFLINE) && !generationType.equals(Invoice.GENERATION_TYPE_ONLINE))
+            return ApiResponseHandler.createResponse("GenerationType can only be Online or Off Line", null, ResponseStatusCode.BAD_REQUEST);
         BigDecimal grandTotal = apiRequestHandler.getBigDecimalValue("grandTotal");
 
         return orderApiService.generateInvoice(invoiceItems, taxOverTotalPrice, discountOverTotalPrice, customerName, customerContactNo, couponCode, deliveryStatus, paymentStatus, grandTotal, storeId);
     }
 
+    @GetMapping("get-invoice-by-id/{invoiceId}")
+    public ResponseEntity<ApiResponseHandler> getInvoiceById(@PathVariable String invoiceId){
+        if (org.apache.commons.lang3.StringUtils.isEmpty(invoiceId))
+            return ApiResponseHandler.createResponse("please provide InvoiceId", null, ResponseStatusCode.BAD_REQUEST);
+
+        return orderApiService.invoiceByInvoiceId(invoiceId);
+    }
 }

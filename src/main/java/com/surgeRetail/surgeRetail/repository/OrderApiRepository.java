@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -68,5 +69,16 @@ public class OrderApiRepository {
             Update update = new Update().inc("itemStock", -x.getQuantity());
             mongoTemplate.updateFirst(query, update, Item.class);
         });
+    }
+
+    public Invoice invoiceByInvoiceId(String invoiceId) {
+        return mongoTemplate.findById(invoiceId, Invoice.class);
+    }
+
+    public List<InvoiceItem> findInvoiceItemByStoreId(String storeId){
+        Query query = new Query();
+        Criteria criteria = Criteria.where("invoiceId").is(storeId);
+        query.addCriteria(criteria);
+        return mongoTemplate.find(query, InvoiceItem.class);
     }
 }
