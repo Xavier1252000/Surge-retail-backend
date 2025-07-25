@@ -8,13 +8,15 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.surgeRetail.surgeRetail.excpetionHandlers.CustomExceptions;
 import io.micrometer.common.util.StringUtils;
 import lombok.Data;
+
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 
 @Data
-public class ApiRequestHandler {
+public class ApiRequestHandler implements Serializable {
 
     private Map<String, Object>  data= new HashMap<>();
 
