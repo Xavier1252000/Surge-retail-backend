@@ -5,11 +5,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 @ResponseBody
-public class ApiResponseHandler {
+public class ApiResponseHandler implements Serializable {
 
     @JsonProperty("response")
     private Map<String, Object> response = new LinkedHashMap<>();
