@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.surgeRetail.surgeRetail.document.orderAndInvoice.Invoice;
 import com.surgeRetail.surgeRetail.dtos.InvoiceRequestDto;
+import com.surgeRetail.surgeRetail.repository.BillingApiRepository;
 import com.surgeRetail.surgeRetail.utils.generic.GenericFilterService;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
@@ -21,39 +22,37 @@ public class BillingApiService {
 
     private final GenericFilterService genericFilterService;
     private final ObjectMapper objectMapper;
+    private final BillingApiRepository billingApiRepository;
 
     public BillingApiService(GenericFilterService genericFilterService,
-                             ObjectMapper objectMapper) {
+                             ObjectMapper objectMapper,
+                             BillingApiRepository billingApiRepository) {
         this.genericFilterService = genericFilterService;
         this.objectMapper = objectMapper;
+        this.billingApiRepository = billingApiRepository;
     }
 
-    public ResponseEntity<ApiResponseHandler> listInvoiceByFilters(InvoiceRequestDto invoiceFilters) {
-        objectMapper.registerModule(new JavaTimeModule());
+        public ResponseEntity<ApiResponseHandler> listInvoiceByFilters(InvoiceRequestDto invoiceFilters) {
 
-//        Map<String, Object> filterMap;
-//        try {
-//            filterMap = objectMapper.readValue(objectMapper.writeValueAsString(invoiceFilters), objectMapper.getTypeFactory().constructMapType(Map.class, String.class, Object.class));
-//        } catch (JsonProcessingException e) {
-//            throw new RuntimeException(e);
-//        }
 
-        Map<String, Object> filterMap = new HashMap<>();
-        Field[] fields = InvoiceRequestDto.class.getDeclaredFields();
+            objectMapper.registerModule(new JavaTimeModule());
 
-        for (Field field : fields) {
-            field.setAccessible(true);
-            try {
-                Object value = field.get(invoiceFilters);
-                if (value != null) {
-                    filterMap.put(field.getName(), value);
+            Map<String, Object> filterMap = new HashMap<>();
+            Field[] fields = InvoiceRequestDto.class.getDeclaredFields();
+
+            for (Field field : fields) {
+                field.setAccessible(true);
+                try {
+                    Object value = field.get(invoiceFilters);
+                    if (value != null) {
+                        filterMap.put(field.getName(), value);
+                    }
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException("Failed to access field: " + field.getName(), e);
                 }
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException("Failed to access field: " + field.getName(), e);
             }
-        }
 
-        List<Invoice> invoices = genericFilterService.getObjectByFieldFilters(Invoice.class, filterMap);
-        return ApiResponseHandler.createResponse("Success", invoices, ResponseStatusCode.SUCCESS);
-    }
+            List<Invoice> invoices = genericFilterService.getObjectByFieldFilters(Invoice.class, filterMap);
+            return ApiResponseHandler.createResponse("Success", invoices, ResponseStatusCode.SUCCESS);
+        }
 }

@@ -4,6 +4,8 @@ import com.surgeRetail.surgeRetail.utils.Auditable;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -19,9 +21,17 @@ public class Order extends Auditable {
     private String customerEmailId;
     private String customerMobileNo;
     private Set<String> itemIds;
+
+    @Field(targetType = FieldType.DECIMAL128)
     private BigDecimal totalBasePrice;
+
+    @Field(targetType = FieldType.DECIMAL128)
     private BigDecimal totalTaxPrice;
+
+    @Field(targetType = FieldType.DECIMAL128)
     private BigDecimal totalDiscount;
+
+    @Field(targetType = FieldType.DECIMAL128)
     private BigDecimal finalAmount;
     private String orderStatus;
     private ShippingAddress shippingAddress;

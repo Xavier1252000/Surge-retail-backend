@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -21,6 +23,8 @@ public class TaxMaster extends Auditable {
     private Set<String> storeIds;
     private String taxCode;  //SGST, IGST, GST-18
     private String taxType; // GST, VAT, etc.
+
+    @Field(targetType = FieldType.DECIMAL128)
     private BigDecimal taxPercentage; // Stores tax in decimal (e.g., 18.00 for 18%)
     private String applicableOn; // Item, total bill, etc
     private Set<String> applicableCategories = new HashSet<>();

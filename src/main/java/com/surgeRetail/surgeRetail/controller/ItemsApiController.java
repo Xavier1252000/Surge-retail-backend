@@ -304,6 +304,8 @@ public class ItemsApiController {
                 return new ResponseEntity<>(new ApiResponseHandler("please provide valid values for index and itemPerIndex", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
         }
 
+        System.out.println(apiRequestHandler);
+
         return itemsApiService.getItemsByStoreId(index, itemPerIndex, storeId);
     }
 

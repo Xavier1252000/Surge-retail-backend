@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -18,17 +20,26 @@ public class Invoice extends Auditable {
     private Long serialNo;   //invoiceNo
     private String storeId;
     private String customerId;     //user id who will be buyer
+
+    @Field(targetType = FieldType.DECIMAL128)
     private BigDecimal grossAmount;     // item total amount without tax
+
+    @Field(targetType = FieldType.DECIMAL128)
     private BigDecimal netAmount;      //total amount with tax
     private List<String> invoiceTaxIds;
+
+    @Field(targetType = FieldType.DECIMAL128)
     private BigDecimal invoiceTaxAmount;
     private List<String> invoiceDiscountIds;
+
+    @Field(targetType = FieldType.DECIMAL128)
     private BigDecimal invoiceDiscountAmount;
     private String discountComment;
 
     private String invoiceTender;
     private String deliveryStatus;
 
+    @Field(targetType = FieldType.DECIMAL128)
     private BigDecimal grandTotal;
     private String paymentStatus;    // payment recieved or not
     private String comment;

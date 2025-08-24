@@ -3,6 +3,8 @@ package com.surgeRetail.surgeRetail.document.ReturnAndRefund;
 import com.surgeRetail.surgeRetail.utils.Auditable;
 import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -15,6 +17,8 @@ public class ReturnRequest extends Auditable {
     private String userId;       // null in case of offline orders ie purchase from store
     private String invoiceId;
     private Set<ReturnItems> returnItems;
+
+    @Field(targetType = FieldType.DECIMAL128)
     private BigDecimal totalRefundAmount;
     private String refundStatus;
     private String reason;

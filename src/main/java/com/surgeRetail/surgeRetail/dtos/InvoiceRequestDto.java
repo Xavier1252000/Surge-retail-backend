@@ -17,10 +17,13 @@ public class InvoiceRequestDto {
     private BigDecimal grossAmount_gte;     // item total amount without tax
     private BigDecimal grossAmount_lte;
     private BigDecimal netAmount_gte;      //total amount with tax
+    private BigDecimal netAmount_lte;      //total amount with tax
     private Set<String> invoiceTaxIds_in;
     private BigDecimal invoiceTaxAmount_gte;
+    private BigDecimal invoiceTaxAmount_lte;
     private Set<String> invoiceDiscountIds_in;
     private BigDecimal invoiceDiscountAmount_gte;
+    private BigDecimal invoiceDiscountAmount_lte;
 
     private Set<String> invoiceTender_in;
     private Set<String> deliveryStatus_in;

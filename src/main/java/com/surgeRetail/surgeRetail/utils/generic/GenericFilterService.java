@@ -11,6 +11,7 @@ import org.springframework.util.CollectionUtils;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.util.*;
 
 @Repository
@@ -99,7 +100,6 @@ public class GenericFilterService {
                     criteriaList.add(Criteria.where(fieldName).lt(value));
                     break;
                 case "gte":
-                    System.out.println(fieldName+value+"-----------------------");
                     criteriaList.add(Criteria.where(fieldName).gte(value));
                     break;
                 case "lte":
@@ -141,12 +141,11 @@ public class GenericFilterService {
         }
 
         System.out.println("ciriteria list------------------"+criteriaList);
+//        criteriaList.add(Criteria.where("grandTotal").gt(new BigDecimal("500")));
         if (!criteriaList.isEmpty()) {
             System.out.println("criteria added");
             query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
         }
-
         return mongoTemplate.find(query, clazz);
     }
-
 }
