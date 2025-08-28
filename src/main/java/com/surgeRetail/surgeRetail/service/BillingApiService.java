@@ -55,4 +55,13 @@ public class BillingApiService {
             List<Invoice> invoices = genericFilterService.getObjectByFieldFilters(Invoice.class, filterMap);
             return ApiResponseHandler.createResponse("Success", invoices, ResponseStatusCode.SUCCESS);
         }
+
+    public ResponseEntity<ApiResponseHandler> getInvoiceFilters() {
+        ArrayList<String> root = new ArrayList<>();
+        Field[] declaredFields = InvoiceRequestDto.class.getDeclaredFields();
+        for (Field f:declaredFields){
+            root.add(f.getName());
+        }
+        return ApiResponseHandler.createResponse("success", root, ResponseStatusCode.SUCCESS);
+    }
 }

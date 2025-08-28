@@ -5,10 +5,7 @@ import com.surgeRetail.surgeRetail.service.BillingApiService;
 import com.surgeRetail.surgeRetail.utils.requestHandlers.ApiRequestHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/billing")
@@ -25,5 +22,10 @@ public class BillingApiController {
     public ResponseEntity<ApiResponseHandler> listInvoiceByFilters(@RequestBody InvoiceRequestDto invoiceRequestDto){
 
         return billingApiService.listInvoiceByFilters(invoiceRequestDto);
+    }
+
+    @GetMapping("/get-invoice-filters")
+    public ResponseEntity<ApiResponseHandler> listInvoiceFilter(){
+        return billingApiService.getInvoiceFilters();
     }
 }

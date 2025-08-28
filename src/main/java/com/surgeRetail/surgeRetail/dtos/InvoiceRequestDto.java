@@ -37,7 +37,7 @@ public class InvoiceRequestDto {
     private Set<String> generationType_in;
     private Set<String> customerName_in;
     private Set<String> customerContactNo_in;
-    private Instant createdFrom_gte;
-    private Instant createdUpTo_lte;
+    private Instant createdOn_gte;
+    private Instant createdOn_lte;
     private Boolean active_is;
 }

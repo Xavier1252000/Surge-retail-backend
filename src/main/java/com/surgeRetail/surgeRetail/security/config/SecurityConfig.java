@@ -49,7 +49,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(Customizer.withDefaults())
                 .authorizeHttpRequests((authorize)->authorize
-                        .requestMatchers("/public/**","/swagger-ui/**", "/v3/**", "/billing").permitAll()
+                        .requestMatchers("/public/**","/swagger-ui/**", "/v3/**").permitAll()
                         .requestMatchers("/confidential/**").hasAuthority(User.USER_ROLE_SUPER_ADMIN)
                         .requestMatchers("/client-desk/**").hasAnyAuthority(User.USER_ROLE_CLIENT, User.USER_ROLE_SUPER_ADMIN,  User.USER_ROLE_STAFF)
                         .requestMatchers("/permissions/**").hasAnyAuthority(User.USER_ROLE_SUPER_ADMIN, User.USER_ROLE_CLIENT, User.USER_ROLE_STAFF)

@@ -43,8 +43,6 @@ public class GenericFilterService {
             String operator = parts[1];
             String flag = parts.length == 3 ? parts[2] : null;
 
-            System.out.println(fieldName+".     ."+operator+".    ."+value);
-
             Set<?> iterableValues = new HashSet<>();
             if (value instanceof Iterable<?>){
                 try {
@@ -81,7 +79,6 @@ public class GenericFilterService {
                     break;
                 case "in":
                     if (value instanceof Iterable<?>) {
-                        System.out.println("in executed");
                         criteriaList.add(Criteria.where(fieldName).in(iterableValues));
                     }
                     break;
@@ -140,10 +137,7 @@ public class GenericFilterService {
             }
         }
 
-        System.out.println("ciriteria list------------------"+criteriaList);
-//        criteriaList.add(Criteria.where("grandTotal").gt(new BigDecimal("500")));
         if (!criteriaList.isEmpty()) {
-            System.out.println("criteria added");
             query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
         }
         return mongoTemplate.find(query, clazz);
