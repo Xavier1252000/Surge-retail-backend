@@ -3,6 +3,7 @@ package com.surgeRetail.surgeRetail.repository;
 import com.surgeRetail.surgeRetail.document.Item.Item;
 import com.surgeRetail.surgeRetail.document.Item.ItemImageInfo;
 import com.surgeRetail.surgeRetail.document.store.Store;
+import com.surgeRetail.surgeRetail.dtos.ItemNameDto;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -121,5 +122,12 @@ public class ItemsApiRepository {
             return mongoTemplate.find(query, Item.class);
         }
         return mongoTemplate.find(query, Item.class);
+    }
+
+    public List<ItemNameDto> getItemsById(List<String> ivIds) {
+        Query query = new Query();
+        query.fields().include("itemName").include("_id");
+        query.addCriteria(Criteria.where("_id").in(ivIds));
+        return mongoTemplate.find(query, ItemNameDto.class, "item");
     }
 }

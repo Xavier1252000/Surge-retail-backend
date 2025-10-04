@@ -175,4 +175,12 @@ public class MasterApiRepository {
     public UnitMaster findUnitById(String unitMasterId) {
         return mongoTemplate.findById(unitMasterId, UnitMaster.class);
     }
+
+    public List<DiscountMaster> getDiscountMasterByIds(Set<String> discountIds) {
+        return mongoTemplate.find(new Query(Criteria.where("_id").in(discountIds)), DiscountMaster.class);
+    }
+
+    public List<TaxMaster> getTaxMasterByIds(Set<String> taxIds) {
+        return mongoTemplate.find(new Query(Criteria.where("_id").in(taxIds)), TaxMaster.class);
+    }
 }

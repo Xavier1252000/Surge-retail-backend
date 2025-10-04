@@ -2,12 +2,14 @@ package com.surgeRetail.surgeRetail.repository;
 
 import com.surgeRetail.surgeRetail.document.master.Roles;
 import com.surgeRetail.surgeRetail.document.userAndRoles.ClientDetails;
+import com.surgeRetail.surgeRetail.document.userAndRoles.User;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
+import javax.swing.text.Document;
 import java.util.Set;
 
 @Repository
@@ -54,5 +56,9 @@ public class UserApiRepository {
 
     public ClientDetails getClientByUserId(String userId) {
         return mongoTemplate.findOne(new Query(Criteria.where("userId").is(userId)), ClientDetails.class);
+    }
+
+    public User findUserById(String id) {
+        return mongoTemplate.findById(id, User.class);
     }
 }

@@ -36,7 +36,7 @@ public class Invoice extends Auditable {
     private BigDecimal invoiceDiscountAmount;
     private String discountComment;
 
-    private String invoiceTender;
+    private InvoiceTender invoiceTender;
     private String deliveryStatus;
 
     @Field(targetType = FieldType.DECIMAL128)
@@ -54,6 +54,7 @@ public class Invoice extends Auditable {
 
     public static final String PAYMENT_STATUS_PAID = "Paid";
     public static final String PAYMENT_STATUS_PENDING = "Pending";
+    public static final String PAYMENT_STATUS_PARTIAL = "Partial";
     public static final String PAYMENT_STATUS_CANCELLED = "Cancelled";
 
     public static final String DELIVERY_STATUS_NOT_DELIVERED = "Not Delivered";

@@ -1,11 +1,8 @@
 package com.surgeRetail.surgeRetail.service;
 
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.surgeRetail.surgeRetail.document.Item.Item;
-import com.surgeRetail.surgeRetail.document.master.DiscountMaster;
-import com.surgeRetail.surgeRetail.document.master.TaxMaster;
 import com.surgeRetail.surgeRetail.document.orderAndInvoice.*;
 import com.surgeRetail.surgeRetail.mailServices.services.EmailService;
 import com.surgeRetail.surgeRetail.mailServices.services.EmailServiceImpl;
@@ -13,20 +10,13 @@ import com.surgeRetail.surgeRetail.repository.ItemsApiRepository;
 import com.surgeRetail.surgeRetail.repository.MasterApiRepository;
 import com.surgeRetail.surgeRetail.repository.OrderApiRepository;
 import com.surgeRetail.surgeRetail.security.UserDetailsImpl;
-import com.surgeRetail.surgeRetail.utils.AppUtils;
 import com.surgeRetail.surgeRetail.utils.AuthenticatedUserDetails;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -216,61 +206,5 @@ public class OrderApiService {
         invItem.setQuantity(quantity);
         invItem.setTotalBasePrice(totalPrice);
         return new ApiResponseHandler("Invoice item saved", invItem, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, false);
-    }
-
-    @Transactional
-    public ResponseEntity<ApiResponseHandler> generateInvoice(List<InvoiceItem> invoiceItems, BigDecimal taxOverTotalPrice, BigDecimal discountOverTotalPrice, String customerName, String customerContactNo, String couponCode, String deliveryStatus, String paymentStatus, BigDecimal grandTotal, String storeId){
-        Invoice invoice = new Invoice();
-        invoice.setCustomerName(customerName);
-        invoice.setCustomerContactNo(customerContactNo);
-        invoice.setStoreId(storeId);
-
-        Long serialNo = Objects.nonNull(orderApiRepository.getGreatestSerialNoInvoice(storeId))?orderApiRepository.getGreatestSerialNoInvoice(storeId).getSerialNo():null;
-        invoice.setSerialNo(serialNo == null ? 1L: serialNo+1L);
-
-        invoice.setGrossAmount(invoiceItems.stream().map(InvoiceItem::getTotalBasePrice).reduce(BigDecimal.ZERO, BigDecimal::add));
-        invoice.setNetAmount(invoiceItems.stream().map(InvoiceItem::getFinalPrice).reduce(BigDecimal.ZERO, BigDecimal::add));
-
-        invoice.setInvoiceTaxAmount(taxOverTotalPrice);
-        invoice.setInvoiceDiscountAmount(discountOverTotalPrice);
-
-        List<DiscountMaster> activeInvoiceDiscounts = masterApiRepository.findActiveInvoiceDiscounts(couponCode);
-        List<String> activeInvoiceDiscountIds = activeInvoiceDiscounts.stream().map(x -> x.getId()).toList();
-        invoice.setInvoiceDiscountIds(activeInvoiceDiscountIds);
-
-        List<TaxMaster> activeInvoiceTaxMaster = masterApiRepository.findActiveInvoiceTaxMaster();
-        List<String> activeInvoiceTaxMasterIds = activeInvoiceTaxMaster.stream().map(x -> x.getId()).toList();
-        invoice.setInvoiceTaxIds(activeInvoiceTaxMasterIds);
-        invoice.setPaymentStatus(paymentStatus);
-        invoice.setDeliveryStatus(deliveryStatus);
-
-        invoice.setGrandTotal(grandTotal);
-        invoice.onCreate();
-        Invoice savedInvoice = orderApiRepository.saveInvoice(invoice);
-
-        orderApiRepository.reduceItemsStock(invoiceItems);
-
-        invoiceItems.forEach(e->{
-            e.setInvoiceId(savedInvoice.getId());
-        });
-
-        List<InvoiceItem> savedInvoiceItems = orderApiRepository.saveAllInvoiceItem(invoiceItems);
-        ObjectNode node = objectMapper.createObjectNode();
-        node.set("invoice", objectMapper.valueToTree(savedInvoice));
-        node.set("invoiceItems", objectMapper.valueToTree(savedInvoiceItems));
-
-
-        return new ResponseEntity<>(new ApiResponseHandler("invoice generated successfully", node, ResponseStatus.CREATED, ResponseStatusCode.CREATED, false), HttpStatus.CREATED);
-    }
-
-
-    public ResponseEntity<ApiResponseHandler> invoiceByInvoiceId(String invoiceId) {
-        Invoice invoice = orderApiRepository.invoiceByInvoiceId(invoiceId);
-        List<InvoiceItem> invoiceItems = orderApiRepository.findInvoiceItemByStoreId(invoice.getId());
-        objectMapper.configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true);
-        ObjectNode node = objectMapper.createObjectNode();
-        node.set("invoice", objectMapper.valueToTree(invoice));
-        node.set("invoiceItems", objectMapper.valueToTree(invoiceItems));
-        return ApiResponseHandler.createResponse("Success", node, ResponseStatusCode.SUCCESS);
     }
 }
