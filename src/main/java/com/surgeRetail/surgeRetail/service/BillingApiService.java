@@ -112,7 +112,6 @@ public class BillingApiService {
 
         public ResponseEntity<ApiResponseHandler> listInvoiceByFilters(InvoiceRequestDto invoiceFilters) {
 
-
             objectMapper.registerModule(new JavaTimeModule());
 
             Map<String, Object> filterMap = new HashMap<>();

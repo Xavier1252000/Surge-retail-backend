@@ -255,31 +255,49 @@ public class MasterApiController {
 //    <------------------------------------------------UnitMaster------------------------------------------------------->
     @PostMapping("/add-unit-master")
     public ResponseEntity<ApiResponseHandler> addUnit(@RequestBody Map<String, Object> requestMap){
-        String unit = (String) requestMap.get("unitFullForm");
-        if(StringUtils.isEmpty(unit)){
-            return new ResponseEntity<>(new ApiResponseHandler("please provide unit", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+        try {
+            String unit = (String) requestMap.get("unitFullForm");
+            if(StringUtils.isEmpty(unit)){
+                return new ResponseEntity<>(new ApiResponseHandler("please provide unit", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+            }
+
+            String unitNotation = (String) requestMap.get("unitNotation");
+            if(StringUtils.isEmpty(unit)){
+                return new ResponseEntity<>(new ApiResponseHandler("please provide unit", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+            }
+
+            List<String> storeIds = (List<String>) requestMap.get("storeIds");
+            if (CollectionUtils.isEmpty(storeIds))
+                return new ResponseEntity<>(new ApiResponseHandler("please provide storeIds", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
+
+            String unitMasterId = (String) requestMap.get("unitMasterId");
+
+            ApiResponseHandler apiResponseHandler = masterApiService.addUnit(unit, unitNotation, storeIds, unitMasterId);
+            if (apiResponseHandler.getStatusCode() != 201)
+                return new ResponseEntity<>(apiResponseHandler, HttpStatus.BAD_REQUEST);
+
+            return new ResponseEntity<>(apiResponseHandler, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return ApiResponseHandler.createResponse("Error "+e.getMessage(), null,
+                    ResponseStatusCode.INTERNAL_SERVER_ERROR);
         }
 
-        String unitNotation = (String) requestMap.get("unitNotation");
-        if(StringUtils.isEmpty(unit)){
-            return new ResponseEntity<>(new ApiResponseHandler("please provide unit", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
-        }
-
-        List<String> storeIds = (List<String>) requestMap.get("storeIds");
-        if (CollectionUtils.isEmpty(storeIds))
-            return new ResponseEntity<>(new ApiResponseHandler("please provide storeIds", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true), HttpStatus.BAD_REQUEST);
-
-        ApiResponseHandler apiResponseHandler = masterApiService.addUnit(unit, unitNotation, storeIds);
-        if (apiResponseHandler.getStatusCode() != 201)
-            return new ResponseEntity<>(apiResponseHandler, HttpStatus.BAD_REQUEST);
-
-        return new ResponseEntity<>(apiResponseHandler, HttpStatus.CREATED);
     }
 
     @PostMapping("/get-all-unit-master")
     public ResponseEntity<ApiResponseHandler> getAllUnitMaster(@RequestBody ApiRequestHandler apiRequestHandler){
         List<String> storeIds = apiRequestHandler.getListValue("storeIds", String.class);
         return new ResponseEntity<>(masterApiService.getAllUnitMaster(storeIds), HttpStatus.OK);
+    }
+
+    @GetMapping("/unit-master-by-id/{unitMasterId}")
+    public ResponseEntity<ApiResponseHandler> unitMasterById(@PathVariable String unitMasterId){
+        return masterApiService.getUnitMasterById(unitMasterId);
+    }
+
+    @GetMapping("/unit-master-status-change/{unitMasterId}")
+    public ResponseEntity<ApiResponseHandler> unitMasterStatusChange(@PathVariable String unitMasterId){
+        return masterApiService.changeUnitStatus(unitMasterId);
     }
 
 

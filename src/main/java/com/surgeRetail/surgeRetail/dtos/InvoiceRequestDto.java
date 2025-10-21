@@ -4,7 +4,6 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.List;
 import java.util.Set;
 
 @Data
@@ -13,6 +12,7 @@ public class InvoiceRequestDto {
     private Set<String> id_in;
     private Set<Long> serialNo_in;   //invoiceNo
     private Set<String> storeId_in;
+    private Set<String> itemIds;
     private Set<String> customerId;     //user id who will be buyer
     private BigDecimal grossAmount_gte;     // item total amount without tax
     private BigDecimal grossAmount_lte;
@@ -40,4 +40,6 @@ public class InvoiceRequestDto {
     private Instant createdOn_gte;
     private Instant createdOn_lte;
     private Boolean active_is;
+    private int index;
+    private int itemPerIndex;
 }

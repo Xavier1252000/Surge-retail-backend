@@ -2,9 +2,8 @@ package com.surgeRetail.surgeRetail.repository;
 
 import com.surgeRetail.surgeRetail.document.master.*;
 import com.surgeRetail.surgeRetail.document.store.Store;
-import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
+import com.surgeRetail.surgeRetail.excpetionHandlers.CustomExceptions;
 import io.micrometer.common.util.StringUtils;
-import org.springframework.boot.autoconfigure.graphql.data.GraphQlQueryByExampleAutoConfiguration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -133,7 +132,7 @@ public class MasterApiRepository {
 
     public List<TaxMaster> getTaxMasterByStoreId(String storeId) {
         Query query = new Query();
-        query.addCriteria(Criteria.where("storeIds").is(storeId));
+        query.addCriteria(Criteria.where("storeIds").is(storeId).and("deleted").is(false));
         return mongoTemplate.find(query, TaxMaster.class);
     }
 
@@ -142,7 +141,10 @@ public class MasterApiRepository {
     }
 
     public void deleteTaxMasterById(String taxMasterId) {
-        mongoTemplate.remove(new Query(Criteria.where("id").is(taxMasterId)), TaxMaster.class);
+        TaxMaster tmById = mongoTemplate.findById(taxMasterId, TaxMaster.class);
+        if (tmById==null) throw new CustomExceptions("No tax found by provided id");
+        tmById.setDeleted(true);
+        mongoTemplate.save(tmById);
     }
 
     public boolean taxMasterExistByTaxCode(String taxCode) {
@@ -164,8 +166,9 @@ public class MasterApiRepository {
         return false;
     }
 
-    public boolean unitExistByName(String unit, List<String> storeIds) {
-        return mongoTemplate.exists(new Query(Criteria.where("unit").is(unit).and("storeIds").in(storeIds)), UnitMaster.class);
+    public boolean unitExistByName(String unit, List<String> storeIds, String unitMasterId) {
+        return mongoTemplate.exists(new Query(Criteria.where("unit").is(unit).and("storeIds").in(storeIds).and("id").ne(unitMasterId)),
+                UnitMaster.class);
     }
 
     public ItemsCategoryMaster findCategoryByName(String categoryName) {
@@ -182,5 +185,17 @@ public class MasterApiRepository {
 
     public List<TaxMaster> getTaxMasterByIds(Set<String> taxIds) {
         return mongoTemplate.find(new Query(Criteria.where("_id").in(taxIds)), TaxMaster.class);
+    }
+
+    public UnitMaster getUnitMasterById(String unitMasterId) {
+        return mongoTemplate.findById(unitMasterId, UnitMaster.class);
+    }
+
+    public UnitMaster changeUnitStatus(String unitMasterId) {
+        UnitMaster unitById = mongoTemplate.findById(unitMasterId, UnitMaster.class);
+        if (unitById==null) throw new CustomExceptions("unit not found with id: "+unitMasterId);
+        unitById.setActive(!unitById.getActive());
+        return mongoTemplate.save(unitById);
+
     }
 }

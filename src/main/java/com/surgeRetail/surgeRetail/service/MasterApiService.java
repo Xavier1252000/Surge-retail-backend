@@ -5,11 +5,10 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.surgeRetail.surgeRetail.document.master.*;
 import com.surgeRetail.surgeRetail.repository.MasterApiRepository;
-import com.surgeRetail.surgeRetail.utils.AppUtils;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatus;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ResponseStatusCode;
-import io.micrometer.common.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -193,13 +192,19 @@ public class MasterApiService {
 
 //    --------------------------------------------------Unit master--------------------------------------------------
 
-    public ApiResponseHandler addUnit(String unit, String unitNotation, List<String> storeIds) {
-        if (masterApiRepository.unitExistByName(unit, storeIds))
+    public ApiResponseHandler addUnit(String unit, String unitNotation, List<String> storeIds, String unitMasterId) {
+        if (masterApiRepository.unitExistByName(unit, storeIds, unitMasterId))
             return new ApiResponseHandler("unit already exists", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
         UnitMaster unitMaster = new UnitMaster();
         unitMaster.setUnit(unit);
         unitMaster.setUnitNotation(unitNotation);
         unitMaster.setStoreIds(new HashSet<>(storeIds));
+        if (StringUtils.isNotEmpty(unitMasterId)){
+            unitMaster.setId(unitMasterId);
+            unitMaster.onUpdate();
+        } else {
+            unitMaster.onCreate();
+        }
         return new ApiResponseHandler("now you can add item with measurement in: "+unit, masterApiRepository.saveUnitMaster(unitMaster), ResponseStatus.CREATED, ResponseStatusCode.CREATED, false);
     }
 
@@ -253,5 +258,19 @@ public class MasterApiService {
 
     public ApiResponseHandler findRolesByCreatedBy(String createdBy) {
         return new ApiResponseHandler("success", masterApiRepository.findRolesByCreatedBy(createdBy), ResponseStatus.SUCCESS, ResponseStatusCode.SUCCESS, false);
+    }
+
+    public ResponseEntity<ApiResponseHandler> getUnitMasterById(String unitMasterId) {
+        try {
+            return ApiResponseHandler.createResponse("success",masterApiRepository.getUnitMasterById(unitMasterId),
+                    ResponseStatusCode.SUCCESS);
+        } catch (Exception e) {
+            return ApiResponseHandler.createResponse(e.getMessage(), null, ResponseStatusCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public ResponseEntity<ApiResponseHandler> changeUnitStatus(String unitMasterId) {
+        return ApiResponseHandler.createResponse("success", masterApiRepository.changeUnitStatus(unitMasterId),
+                ResponseStatusCode.SUCCESS);
     }
 }
