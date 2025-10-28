@@ -24,4 +24,5 @@ public class DiscountMaster extends Auditable {
 
     public static String DISCOUNT_APPLICABLE_ON_ITEM = "Item";
     public static String DISCOUNT_APPLICABLE_ON_INVOICE = "Invoice";
+    public static String DISCOUNT_APPLICABLE_ON_STORES = "Stores";   //applied on total bill in all stores stores
 }

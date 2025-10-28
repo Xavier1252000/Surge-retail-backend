@@ -3,6 +3,7 @@ package com.surgeRetail.surgeRetail.controller;
 import com.surgeRetail.surgeRetail.document.master.DiscountMaster;
 import com.surgeRetail.surgeRetail.document.master.TaxMaster;
 import com.surgeRetail.surgeRetail.document.master.TimezoneMaster;
+import com.surgeRetail.surgeRetail.excpetionHandlers.CustomExceptions;
 import com.surgeRetail.surgeRetail.service.MasterApiService;
 import com.surgeRetail.surgeRetail.utils.requestHandlers.ApiRequestHandler;
 import com.surgeRetail.surgeRetail.utils.responseHandlers.ApiResponseHandler;
@@ -216,11 +217,17 @@ public class MasterApiController {
 //    <--------------------------------------------------------Discount Master -------------------------------------------------------->
 
     @PostMapping("/add-discount-master")
-    public ApiResponseHandler addDiscountMaster(@RequestBody Map<String, Object> requestMap){
+    public ResponseEntity<ApiResponseHandler> addDiscountMaster(@RequestBody Map<String, Object> requestMap){
         String discountName = (String) requestMap.get("discountName");
         if(StringUtils.isEmpty(discountName)){
-            return new ApiResponseHandler("please provide discountName", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return ApiResponseHandler.createResponse("please provide discountName", null, ResponseStatusCode.BAD_REQUEST);
         }
+
+        List<String> sIds = (List<String>) requestMap.get("storeIds");
+        Set<String> storeIds = new HashSet<>(sIds);
+
+        if (CollectionUtils.isEmpty(storeIds))
+            return ApiResponseHandler.createResponse("please provide storeIds", null, ResponseStatusCode.BAD_REQUEST);
 
         Object disPercent = requestMap.get("discountPercentage");
         BigDecimal discountPercentage = null;
@@ -230,16 +237,21 @@ public class MasterApiController {
             try {
                 discountPercentage = new BigDecimal(String.valueOf(disPercent));
             } catch (NumberFormatException e) {
-                return new ApiResponseHandler("please provide valid value in discountPercentage", null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+                return ApiResponseHandler.createResponse("please provide valid value in discountPercentage", null,
+                        ResponseStatusCode.BAD_REQUEST);
             }
         }
 
         String applicableOn = (String) requestMap.get("applicableOn");
         if (!applicableOn.equals(DiscountMaster.DISCOUNT_APPLICABLE_ON_ITEM) && !applicableOn.equals(DiscountMaster.DISCOUNT_APPLICABLE_ON_INVOICE))
-            return new ApiResponseHandler("applicable on can have "+DiscountMaster.DISCOUNT_APPLICABLE_ON_ITEM + " or "+DiscountMaster.DISCOUNT_APPLICABLE_ON_INVOICE, null, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+            return ApiResponseHandler.createResponse("applicable on can have "+DiscountMaster.DISCOUNT_APPLICABLE_ON_ITEM
+                    + " or "+DiscountMaster.DISCOUNT_APPLICABLE_ON_INVOICE, null, ResponseStatusCode.BAD_REQUEST);
 
+        if (storeIds.size()>1 && !applicableOn.equals(DiscountMaster.DISCOUNT_APPLICABLE_ON_STORES))
+            return ApiResponseHandler.createResponse("Multiple stores can only be with applicableOn: "+DiscountMaster.DISCOUNT_APPLICABLE_ON_STORES, null, ResponseStatusCode.BAD_REQUEST);
         String discountCouponCode = (String) requestMap.get("discountCouponCode");
-        return masterApiService.addDiscountMaster(discountName, discountPercentage, discountCouponCode, applicableOn);
+        return masterApiService.addDiscountMaster(discountName, discountPercentage, discountCouponCode, applicableOn,
+                storeIds);
     }
 
     @PostMapping("/get-discount-master")

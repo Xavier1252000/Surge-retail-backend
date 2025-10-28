@@ -175,15 +175,18 @@ public class MasterApiService {
 
 //    ----------------------------------------------------DISCOUNT MASTER--------------------------------------------------------
 
-    public ApiResponseHandler addDiscountMaster(String discountName, BigDecimal discountPercentage, String discountCouponCode, String applicableOn) {
+    public ResponseEntity<ApiResponseHandler> addDiscountMaster(String discountName, BigDecimal discountPercentage,
+                                                String discountCouponCode, String applicableOn, Set<String> storeIds) {
         DiscountMaster discountMaster = new DiscountMaster();
         discountMaster.setDiscountName(discountName);
         discountMaster.setDiscountPercentage(discountPercentage);
         discountMaster.setDiscountCouponCode(discountCouponCode);
         discountMaster.setApplicableOn(applicableOn);
+        discountMaster.setStoreIds(storeIds);
         discountMaster.onCreate();;
         DiscountMaster savedDiscountMaster = masterApiRepository.saveDiscountMaster(discountMaster);
-        return new ApiResponseHandler("discount master saved successfully!!!", savedDiscountMaster, ResponseStatus.BAD_REQUEST, ResponseStatusCode.BAD_REQUEST, true);
+        return ApiResponseHandler.createResponse("discount master saved successfully!!!", savedDiscountMaster,
+                ResponseStatusCode.CREATED);
     }
 
     public ResponseEntity<ApiResponseHandler> getDiscountMasters(List<String> storeIds) {
